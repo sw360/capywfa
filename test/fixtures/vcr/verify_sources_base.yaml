@@ -1,0 +1,392 @@
+interactions:
+- request:
+    body: null
+    headers: {}
+    method: GET
+    uri: https://sw360.example.com/resource/api/
+  response:
+    body:
+      string: "{\n  \"_links\" : {\n    \"sw360:attachments\" : {\n      \"href\"
+        : \"https://sw360.example.com/resource/api/attachments{?sha1}\",\n      \"templated\"
+        : true\n    },\n    \"sw360:changeLogs\" : {\n      \"href\" : \"https://sw360.example.com/resource/api/changelog/document/{id}\",\n
+        \     \"templated\" : true\n    },\n    \"sw360:clearingRequests\" : {\n      \"href\"
+        : \"https://sw360.example.com/resource/api/clearingrequest\"\n    },\n    \"sw360:components\"
+        : {\n      \"href\" : \"https://sw360.example.com/resource/api/components\"\n
+        \   },\n    \"sw360:licenses\" : {\n      \"href\" : \"https://sw360.example.com/resource/api/licenses\"\n
+        \   },\n    \"sw360:licenseinfo\" : {\n      \"href\" : \"https://sw360.example.com/resource/api/licenseinfo\"\n
+        \   },\n    \"sw360:moderationRequests\" : {\n      \"href\" : \"https://sw360.example.com/resource/api/moderationrequest\"\n
+        \   },\n    \"sw360:obligations\" : {\n      \"href\" : \"https://sw360.example.com/resource/api/obligations\"\n
+        \   },\n    \"sw360:projects\" : {\n      \"href\" : \"https://sw360.example.com/resource/api/projects\"\n
+        \   },\n    \"sw360:releases\" : {\n      \"href\" : \"https://sw360.example.com/resource/api/releases\"\n
+        \   },\n    \"sw360:searchs\" : {\n      \"href\" : \"https://sw360.example.com/resource/api/search\"\n
+        \   },\n    \"sw360:users\" : {\n      \"href\" : \"https://sw360.example.com/resource/api/users\"\n
+        \   },\n    \"sw360:vendors\" : {\n      \"href\" : \"https://sw360.example.com/resource/api/vendors\"\n
+        \   },\n    \"sw360:vulnerabilities\" : {\n      \"href\" : \"https://sw360.example.com/resource/api/vulnerabilities\"\n
+        \   },\n    \"profile\" : {\n      \"href\" : \"https://sw360.example.com/resource/api/profile\"\n
+        \   },\n    \"curies\" : [ {\n      \"href\" : \"https://sw360.example.com/resource/docs/{rel}.html\",\n
+        \     \"name\" : \"sw360\",\n      \"templated\" : true\n    } ]\n  }\n}"
+    headers:
+      Cache-Control:
+      - no-cache, no-store, max-age=0, must-revalidate
+      Connection:
+      - keep-alive
+      Content-Security-Policy:
+      - default-src 'self'; connect-src *; font-src *; frame-src *; img-src * data:;
+        media-src *; object-src *; script-src * 'unsafe-inline' 'unsafe-eval'; style-src
+        * 'unsafe-inline';
+      Content-Type:
+      - application/hal+json
+      Date:
+      - Tue, 26 Sep 2023 09:24:39 GMT
+      Expires:
+      - '0'
+      Pragma:
+      - no-cache
+      Referrer-Policy:
+      - strict-origin
+      Server:
+      - Apache
+      Strict-Transport-Security:
+      - max-age=31536000; includeSubDomains
+      Transfer-Encoding:
+      - chunked
+      Vary:
+      - Origin,Access-Control-Request-Method,Access-Control-Request-Headers
+      X-Content-Type-Options:
+      - nosniff
+      - nosniff
+      X-Frame-Options:
+      - SAMEORIGIN
+      - DENY
+      X-XSS-Protection:
+      - 1; mode=block
+      - 1; mode=block
+      x-Frame-Options:
+      - SAMEORIGIN
+      - DENY
+    status:
+      code: 200
+      message: ''
+- request:
+    body: null
+    headers: {}
+    method: GET
+    uri: https://sw360.example.com/resource/api/releases/123
+  response:
+    body:
+      string: "{\n  \"name\" : \"efibootguard\",  \"version\" : \"0.13+cip.debian\",
+        \ \"componentType\" : \"OSS\",  \"externalIds\" : {
+        \ \"package-url\" : \"pkg:deb/debian/efibootguard@0.13+cip?arch=arm64&distro=debian-11\"
+        \ },  \"additionalData\" : {},  \"createdOn\" : \"2023-04-01\", \"createdBy\" : \"user@example.com\", \n
+        \ \"sourceCodeDownloadurl\" : \"https://github.com/siemens/efibootguard/archive/refs/tags/v0.13.zip\", \n
+        \ \n \"_links\" : {\n  \"sw360:component\" : {\n      \"href\" : \"https://sw360.example.com/resource/api/components/1\"\n
+        \   },\n    \"self\" : {\n      \"href\" : \"https://sw360.example.com/resource/api/releases/123\"\n
+        \   },\n    \"curies\" : [ {\n      \"href\" : \"https://sw360.example.com/resource/docs/{rel}.html\",\n
+        \     \"name\" : \"sw360\",\n      \"templated\" : true\n    } ]\n  },\n  \"_embedded\"
+        : {\n    \"sw360:attachments\" : [ {\n      \"filename\" : \"efibootguard-0.13.zip\",\n
+        \     \"sha1\" : \"f8ed764424ee04dac8298bdc1feed2e356f3d2cd\",\n      \"attachmentType\"
+        : \"SOURCE\",\n      \"_links\" : {\n        \"self\" : {\n          \"href\"
+        : \"https://sw360.example.com/resource/api/attachments/465\"\n
+        \       }\n      }\n    } ]\n  }\n}"
+    headers:
+      Cache-Control:
+      - no-cache, no-store, max-age=0, must-revalidate
+      Connection:
+      - keep-alive
+      Content-Security-Policy:
+      - default-src 'self'; connect-src *; font-src *; frame-src *; img-src * data:;
+        media-src *; object-src *; script-src * 'unsafe-inline' 'unsafe-eval'; style-src
+        * 'unsafe-inline';
+      Content-Type:
+      - application/hal+json
+      Date:
+      - Tue, 26 Sep 2023 09:24:39 GMT
+      Expires:
+      - '0'
+      Pragma:
+      - no-cache
+      Referrer-Policy:
+      - strict-origin
+      Server:
+      - Apache
+      Strict-Transport-Security:
+      - max-age=31536000; includeSubDomains
+      Transfer-Encoding:
+      - chunked
+      Vary:
+      - Origin,Access-Control-Request-Method,Access-Control-Request-Headers
+      X-Content-Type-Options:
+      - nosniff
+      - nosniff
+      X-Frame-Options:
+      - SAMEORIGIN
+      - DENY
+      X-XSS-Protection:
+      - 1; mode=block
+      - 1; mode=block
+      x-Frame-Options:
+      - SAMEORIGIN
+      - DENY
+    status:
+      code: 200
+      message: ''
+- request:
+    body: null
+    headers: {}
+    method: GET
+    uri: https://sw360.example.com/resource/api/attachments/465
+  response:
+    body:
+      string: "{\n  \"filename\" : \"efibootguard-0.13.zip\",\n  \"sha1\" : \"f8ed764424ee04dac8298bdc1feed2e356f3d2cd\",\n
+        \ \"attachmentType\" : \"SOURCE\",\n  
+        \ \"createdComment\" : \"Attached by CaPyCli\", \"createdBy\" : \"user@example.com\",\n
+        \ \"createdOn\" : \"2023-07-17\",\n  \"checkedComment\" : \"\",\n  \"checkStatus\"
+        : \"NOTCHECKED\",\n  \"_links\" : {\n    \"sw360:downloadLink\" : {\n      \"href\"
+        : \"https://sw360.example.com/resource/api/releases/123/attachments/465\"\n
+        \   },\n    \"self\" : {\n      \"href\" : \"https://sw360.example.com/resource/api/attachments/465\"\n
+        \   },\n    \"curies\" : [ {\n      \"href\" : \"https://sw360.example.com/resource/docs/{rel}.html\",\n
+        \     \"name\" : \"sw360\",\n      \"templated\" : true\n    } ]\n  },\n  \"_embedded\"
+        : {\n    \"createdBy\" : {\n      \"email\" : \"gernot.hillier@example.com\",\n
+        \     \"deactivated\" : false,\n      \"fullName\" : \"Gernot Hillier\",\n
+        \     \"_links\" : {\n        \"self\" : {\n          \"href\" : \"https://sw360.example.com/resource/api/users/byid/gernot.hillier%2540example.com\"\n
+        \       }\n      }\n    },\n    \"sw360:releases\" : [ {\n      \"name\" :
+        \"efibootguard\",\n      \"version\" : \"0.13+cip.debian\",\n      \"_links\"
+        : {\n        \"self\" : {\n          \"href\" : \"https://sw360.example.com/resource/api/releases/123\"\n
+        \       }\n      }\n    } ]\n  }\n}"
+    headers:
+      Cache-Control:
+      - no-cache, no-store, max-age=0, must-revalidate
+      Connection:
+      - keep-alive
+      Content-Security-Policy:
+      - default-src 'self'; connect-src *; font-src *; frame-src *; img-src * data:;
+        media-src *; object-src *; script-src * 'unsafe-inline' 'unsafe-eval'; style-src
+        * 'unsafe-inline';
+      Content-Type:
+      - application/hal+json
+      Date:
+      - Tue, 26 Sep 2023 09:24:39 GMT
+      Expires:
+      - '0'
+      Pragma:
+      - no-cache
+      Referrer-Policy:
+      - strict-origin
+      Server:
+      - Apache
+      Strict-Transport-Security:
+      - max-age=31536000; includeSubDomains
+      Transfer-Encoding:
+      - chunked
+      Vary:
+      - Origin,Access-Control-Request-Method,Access-Control-Request-Headers
+      X-Content-Type-Options:
+      - nosniff
+      - nosniff
+      X-Frame-Options:
+      - SAMEORIGIN
+      - DENY
+      X-XSS-Protection:
+      - 1; mode=block
+      - 1; mode=block
+      x-Frame-Options:
+      - SAMEORIGIN
+      - DENY
+    status:
+      code: 200
+      message: ''
+- request:
+    body: null
+    headers:
+      Accept:
+      - application/*
+      Accept-Encoding:
+      - gzip, deflate
+      Connection:
+      - keep-alive
+    method: GET
+    uri: https://sw360.example.com/resource/api/releases/123/attachments/465
+  response:
+    body:
+      string: !!binary |
+        UEsDBAoAAAAAAPpyOlfglrrDBgAAAAYAAAAJABwAaGFsbG8udHh0VVQJAANXzRJlVc0SZXV4CwAB
+        BOgDAAAEZAAAAGhhbGxvClBLAQIeAwoAAAAAAPpyOlfglrrDBgAAAAYAAAAJABgAAAAAAAEAAACk
+        gQAAAABoYWxsby50eHRVVAUAA1fNEmV1eAsAAQToAwAABGQAAABQSwUGAAAAAAEAAQBPAAAASQAA
+        AAAA
+    headers:
+      Cache-Control:
+      - no-cache, no-store, max-age=0, must-revalidate
+      Connection:
+      - keep-alive
+      Content-Disposition:
+      - attachment; filename="efibootguard-0.13.zip"
+      Content-Security-Policy:
+      - default-src 'self'; connect-src *; font-src *; frame-src *; img-src * data:;
+        media-src *; object-src *; script-src * 'unsafe-inline' 'unsafe-eval'; style-src
+        * 'unsafe-inline';
+      Content-Type:
+      - multipart/form-data
+      Date:
+      - Tue, 26 Sep 2023 12:20:07 GMT
+      Expires:
+      - '0'
+      Pragma:
+      - no-cache
+      Referrer-Policy:
+      - strict-origin
+      Server:
+      - Apache
+      Strict-Transport-Security:
+      - max-age=31536000; includeSubDomains
+      Transfer-Encoding:
+      - chunked
+      Vary:
+      - Origin,Access-Control-Request-Method,Access-Control-Request-Headers
+      X-Content-Type-Options:
+      - nosniff
+      - nosniff
+      X-Frame-Options:
+      - SAMEORIGIN
+      - DENY
+      X-XSS-Protection:
+      - 1; mode=block
+      - 1; mode=block
+      x-Frame-Options:
+      - SAMEORIGIN
+      - DENY
+    status:
+      code: 200
+      message: ''
+- request:
+    body: '{"checkStatus": "ACCEPTED"}'
+    headers:
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - gzip, deflate
+      Connection:
+      - keep-alive
+      Content-Length:
+      - '27'
+      Content-Type:
+      - application/json
+    method: PATCH
+    uri: https://sw360.example.com/resource/api/releases/123/attachment/465
+  response:
+    body:
+      string: "{\n  \"filename\" : \"efibootguard-0.13.zip\",\n  \"sha1\" : \"f8ed764424ee04dac8298bdc1feed2e356f3d2cd\",\n
+        \ \"attachmentType\" : \"SOURCE\",\n  
+        \ \"checkedBy\" : \"gernot.hillier@example.com\",\n
+        \ \"checkedTeam\" : \"GH\",\n  \"checkedComment\" : \"\",\n  \"checkedOn\"
+        : \"2023-09-26\",\n  \"checkStatus\" : \"ACCEPTED\",\n  \"_links\" : {\n    \"self\"
+        : {\n      \"href\" : \"https://sw360.example.com/resource/api/attachments/465\"\n
+        \   }\n  }\n}"
+    headers:
+      Cache-Control:
+      - no-cache, no-store, max-age=0, must-revalidate
+      Connection:
+      - keep-alive
+      Content-Security-Policy:
+      - default-src 'self'; connect-src *; font-src *; frame-src *; img-src * data:;
+        media-src *; object-src *; script-src * 'unsafe-inline' 'unsafe-eval'; style-src
+        * 'unsafe-inline';
+      Content-Type:
+      - application/hal+json
+      Date:
+      - Tue, 26 Sep 2023 15:42:27 GMT
+      Expires:
+      - '0'
+      Pragma:
+      - no-cache
+      Referrer-Policy:
+      - strict-origin
+      Server:
+      - Apache
+      Strict-Transport-Security:
+      - max-age=31536000; includeSubDomains
+      Transfer-Encoding:
+      - chunked
+      Vary:
+      - Origin,Access-Control-Request-Method,Access-Control-Request-Headers
+      X-Content-Type-Options:
+      - nosniff
+      - nosniff
+      X-Frame-Options:
+      - SAMEORIGIN
+      - DENY
+      X-XSS-Protection:
+      - 1; mode=block
+      - 1; mode=block
+      x-Frame-Options:
+      - SAMEORIGIN
+      - DENY
+    status:
+      code: 200
+      message: ''
+- request:
+    body: '{"checkStatus": "ACCEPTED"}'
+    headers:
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - gzip, deflate
+      Connection:
+      - keep-alive
+      Content-Length:
+      - '27'
+      Content-Type:
+      - application/json
+    method: PATCH
+    uri: https://sw360.example.com//resource/api/releases/123/attachment/465
+  response:
+    body:
+      string: "{\n  \"filename\" : \"efibootguard-0.13.zip\",\n  \"sha1\" : \"f8ed764424ee04dac8298bdc1feed2e356f3d2cd\",\n
+        \ \"attachmentType\" : \"SOURCE\",\n  
+        \ \"checkedBy\" : \"gernot.hillier@example.com\",\n
+        \ \"checkedTeam\" : \"GH\",\n  \"checkedComment\" : \"\",\n  \"checkedOn\"
+        : \"2023-09-26\",\n  \"checkStatus\" : \"ACCEPTED\",\n  \"_links\" : {\n    \"self\"
+        : {\n      \"href\" : \"https://sw360.example.com/resource/api/attachments/465\"\n
+        \   }\n  }\n}"
+    headers:
+      Cache-Control:
+      - no-cache, no-store, max-age=0, must-revalidate
+      Connection:
+      - keep-alive
+      Content-Security-Policy:
+      - default-src 'self'; connect-src *; font-src *; frame-src *; img-src * data:;
+        media-src *; object-src *; script-src * 'unsafe-inline' 'unsafe-eval'; style-src
+        * 'unsafe-inline';
+      Content-Type:
+      - application/hal+json
+      Date:
+      - Tue, 26 Sep 2023 15:42:27 GMT
+      Expires:
+      - '0'
+      Pragma:
+      - no-cache
+      Referrer-Policy:
+      - strict-origin
+      Server:
+      - Apache
+      Strict-Transport-Security:
+      - max-age=31536000; includeSubDomains
+      Transfer-Encoding:
+      - chunked
+      Vary:
+      - Origin,Access-Control-Request-Method,Access-Control-Request-Headers
+      X-Content-Type-Options:
+      - nosniff
+      - nosniff
+      X-Frame-Options:
+      - SAMEORIGIN
+      - DENY
+      X-XSS-Protection:
+      - 1; mode=block
+      - 1; mode=block
+      x-Frame-Options:
+      - SAMEORIGIN
+      - DENY
+    status:
+      code: 200
+      message: ''
+version: 1
