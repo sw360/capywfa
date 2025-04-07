@@ -67,8 +67,15 @@ def guess_alpine_version(pkg, version):
 
 def lst_to_sbom(format, package_list):
     packages = open(package_list)
-    data = []
+    components = []
     ancestor = None
+    if format == "deb":
+        namespace = "debian"
+    elif format == "apk":
+        namespace = "alpine"
+    else:
+        print("Unknown format", format)
+        sys.exit(1)
 
     for line in packages:
         line = line.strip()
@@ -94,27 +101,29 @@ def lst_to_sbom(format, package_list):
         if os_version:
             print("Detected", " ".join(os_version))
             if ancestor and os_version != ancestor:
-                print("WARNING: Detected multiple OS versions.")
+                print("ERROR: Detected multiple OS versions.")
+                sys.exit(1)
             ancestor = os_version
 
-        if format == "deb":
-            namespace = "debian"
-        elif format == "apk":
-            namespace = "alpine"
-        else:
-            print("Unknown format", format)
-            sys.exit(1)
-
-        purl = PackageURL(type=format, namespace=namespace,
-                          name=src_pkg, version=src_version,
-                          qualifiers={'arch': 'source'})
         entry = {
             "type": "library",
             "name": src_pkg,
-            "version": src_version + "." + namespace,
-            "purl": purl.to_string()}
-        if entry not in data:
-            data.append(entry)
+            "version": src_version}
+        if entry not in components:
+            components.append(entry)
+
+    if format == "apk" and ancestor is None:
+        print("ERROR: No Alpine version detected, can't create purls.")
+        sys.exit(1)
+
+    for entry in components:
+        qualifiers = {'arch': 'source'}
+        if format == "apk":
+            qualifiers['distro'] = f'alpine-{ancestor[1]}'
+        purl = PackageURL(type=format, namespace=namespace,
+                          name=entry["name"], version=entry["version"],
+                          qualifiers=qualifiers)
+        entry["purl"] = purl.to_string()
 
     bom = {
         "bomFormat": "CycloneDX",
@@ -133,7 +142,7 @@ def lst_to_sbom(format, package_list):
                         "type": "website",
                         "url": "https://github.com/sw360/capywfa"}]
                 }]},
-        "components": data}
+        "components": components}
 
     if ancestor:
         bom["metadata"]["component"]["pedigree"] = {

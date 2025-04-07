@@ -1,0 +1,6 @@
+alpine-baselayout|3.6.5-r0|alpine-baselayout|3.6.5-r0
+alpine-baselayout|3.6.5-r0|alpine-baselayout-data|3.6.5-r0
+alpine-keys|2.4-r1|alpine-keys|2.4-r1
+apk-tools|2.14.4-r0|apk-tools|2.14.4-r0
+busybox|1.36.1-r29|busybox|1.36.1-r29
+busybox|1.36.1-r29|busybox-binsh|1.36.1-r29
