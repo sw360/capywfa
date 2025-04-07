@@ -94,8 +94,6 @@ poetry install
 poetry run python3 ./capywfa/capywfa.py ...
 ```
 
-If you experience Poetry issues, check the [Poetry Issues](#poetry-issues) section below.
-
 ## Installing as Python package (experimental)
 
 TODO: Not available on Github/PyPI yet.
@@ -107,18 +105,16 @@ part of the Poetry and Docker environments, you can verify that the upload
 succeeded and already existing releases have correct sources and meta data:
 
 ```shell
-$ python3 -m capycli bom Map --nocache -i package-list.json -t <sw360-token> -oa -o package-list-mapped.json
+$ python3 -m capycli bom Map --nocache -i packages-list.json -t <sw360-token> -oa -o packages-mapped.json
 [...]
 Mapping result:
   Full match by id, at, 3.1.23-1.debian => at daemon, 3.1.23-1.debian, b0667b7334c070cd2f05b071265ce7b3
-  Full match by id, software-properties, 0.96.20.2-2.debian => software-properties, 0.96.20.2-2.debian, c1d7bfc23140c099d5e39c7df35d828f
 [...]
-$ python3 -m capycli bom Map -i package-list.json -t <sw360-token> -oa -o package-list-mapped.json
-$ python3 -m capycli project Prerequisites -id <sw360-project-id> -i package-list-mapped.json -t <sw360-token> -oa
+$ python3 -m capycli project Prerequisites -id <project-id> -i packages-mapped.json -t <token> -oa
 [...]
   Components:
     software-properties, 0.96.20.2-2.debian: OPEN
-      Download URL: http://deb.debian.org/debian/pool/main/s/software-properties/software-properties_0.96.20.2-2.dsc
+      Download URL: http://deb.debian.org/debian/pool/main/s/software-properties_0.96.20.2-2.dsc
       SHA1 for source software-properties_0.96.20.2-2-debian-combined.tar.bz2 doesn't match!
       1 source file(s) available.
       component management id: {'package-url': 'pkg:deb/debian/software-properties@0.96.20.2-2?arch=source'}
