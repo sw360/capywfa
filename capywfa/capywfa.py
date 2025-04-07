@@ -25,6 +25,8 @@ from capycli.project.create_project import CreateProject
 from cyclonedx.model import ExternalReferenceType
 from capywfa.cdx_support import get_cdx, set_cdx, legacy_to_cdx_prop
 
+args = None
+
 
 def write_bom(bom, outputname, check_length=True):
     prefix = datetime.datetime.now(tz=None).isoformat(timespec="seconds")
@@ -50,7 +52,6 @@ def write_bom(bom, outputname, check_length=True):
 
 
 def confirm(text):
-    global args
     if args.noninteractive:
         return None
     else:
