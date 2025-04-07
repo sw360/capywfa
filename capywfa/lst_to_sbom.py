@@ -65,15 +65,14 @@ def guess_alpine_version(pkg, version):
                 return ("Alpine Linux", alpine_version)
 
 
-def lst_to_sbom(format, package_list, output_file):
+def lst_to_sbom(format, package_list):
     packages = open(package_list)
     data = []
     ancestor = None
 
-    pwd = os.getcwd()
-
     for line in packages:
-        if line.strip() == "" or line.strip().startswith("#"):
+        line = line.strip()
+        if line == "" or line.startswith("#"):
             continue
 
         if format == "apk" and "{" in line and "|" not in line:
@@ -117,8 +116,6 @@ def lst_to_sbom(format, package_list, output_file):
         if entry not in data:
             data.append(entry)
 
-    os.chdir(pwd)
-
     bom = {
         "bomFormat": "CycloneDX",
         "specVersion": "1.6",
@@ -144,9 +141,7 @@ def lst_to_sbom(format, package_list, output_file):
                 "type": "operating-system",
                 "name": ancestor[0],
                 "version": ancestor[1]}]}
-
-    bom_file = open(output_file, "w")
-    json.dump(bom, bom_file, indent=2)
+    return bom
 
 
 def main():
@@ -158,8 +153,10 @@ def main():
     parser.add_argument("output_file", help="SBOM output file")
     args = parser.parse_args()
 
-    lst_to_sbom(format=args.format, package_list=args.package_list,
-                output_file=args.output_file)
+    bom = lst_to_sbom(format=args.format, package_list=args.package_list)
+
+    with open(args.output_file, "w") as bom_file:
+        json.dump(bom, bom_file, indent=2)
 
 
 if __name__ == "__main__":
