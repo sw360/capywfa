@@ -121,7 +121,7 @@ def lst_to_sbom(format, package_list, output_file):
 
     bom = {
         "bomFormat": "CycloneDX",
-        "specVersion": "1.4",
+        "specVersion": "1.6",
         "version": 1,
         "metadata": {
             "component": {
@@ -130,20 +130,11 @@ def lst_to_sbom(format, package_list, output_file):
             "tools": [
                 {
                     "vendor": "Siemens AG",
-                    "name": "standard-bom",
-                    "version": "2.0.0",
+                    "name": "capywfa",
+                    "version": importlib.metadata.version("capywfa"),
                     "externalReferences": [{
                         "type": "website",
-                        "url": "https://sbom.siemens.io/"}]
-                },
-                {
-                    "vendor": "Siemens AG",
-                    "name": "distroclearing",
-                    "version": importlib.metadata.version("distroclearing"),
-                    "externalReferences": [{
-                        "type": "website",
-                        "url": "https://code.siemens.com/"
-                            "linux/distro-clearing/distro-clearing"}]
+                        "url": "https://github.com/sw360/capywfa"}]
                 }]},
         "components": data}
 
@@ -160,11 +151,11 @@ def lst_to_sbom(format, package_list, output_file):
 
 def main():
     parser = argparse.ArgumentParser(
-        description="convert Linux package list to Siemens SBOMv1 format",
+        description="convert Linux package list to CycloneDX format",
         formatter_class=argparse.RawTextHelpFormatter)
     parser.add_argument("format", help="Can be 'deb' or 'apk'")
     parser.add_argument("package_list", help="Linux package_list")
-    parser.add_argument("output_file", help="BOM output file")
+    parser.add_argument("output_file", help="SBOM output file")
     args = parser.parse_args()
 
     lst_to_sbom(format=args.format, package_list=args.package_list,
