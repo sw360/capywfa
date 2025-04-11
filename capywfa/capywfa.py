@@ -235,6 +235,11 @@ def main():
             """SW360 auth token string. If the token is longer than 100
             characters, it's regarded as OAuth token."""))
     parser.add_argument(
+        "-vf", "--trusted-verifiers", metavar="EMAIL", nargs="+", required=True,
+        help=textwrap.dedent(
+            """Attachments approved by these users will be trusted without
+            content checks.""")),
+    parser.add_argument(
         "--id", help=textwrap.dedent(
             """SW360 id of the target project."""))
     parser.add_argument(
@@ -316,7 +321,8 @@ def main():
     else:
         # without pkg_dir, it will only verify SW360's attachment `checkStatus`
         confirm("Press ENTER to continue or CTRL-C to interrupt.")
-        bom = verify_sources(bom, args.url, args.token, pkg_dir=None)
+        bom = verify_sources(bom, args.url, args.token,
+                             trusted_verifiers=args.trusted_verifiers, pkg_dir=None)
         write_bom(bom, filename+"-2-sourceverify-quick"+extension)
 
     print()
@@ -388,8 +394,8 @@ def main():
         if not os.path.exists("verify"):
             os.mkdir("verify")
 
-            bom = verify_sources(bom, args.url, args.token,
-                                 args.sources)
+            bom = verify_sources(bom, args.url, args.token, pkg_dir=args.sources,
+                                 trusted_verifiers=args.trusted_verifiers)
             outputbom = write_bom(bom, filename+"-5-sourceverify"+extension)
 
     print()
