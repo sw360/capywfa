@@ -9,7 +9,9 @@ SPDX-License-Identifier: MIT
 
 ## UNRELEASED
 
-* capywfa: SBOM properties for workflow control renamed from `distroclearing:*` to `capywfa:*`
+* respect PURL qualifiers during mapping, if PURLs don't match, source attachments
+  are checked and the user is informed about the result
+* SBOM properties for workflow control renamed from `distroclearing:*` to `capywfa:*`
   Additionally, our property Sw360SourceFileChecked was renamed to Sw360SourceFileCheck
 * lst_to_sbom: add support for guessing Alpine Linux 3.22
 * lst_to_sbom: create valid CycloneDX BOMs using the CycloneDX Python library
