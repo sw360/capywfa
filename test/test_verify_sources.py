@@ -89,12 +89,12 @@ def test_verify_sources_extract_match(capsys, verify):
         bom = verify_sources(bom, "https://sw360.example.com", "mytoken", [], "test/fixtures")
         assert cassette.play_count == 4
 
-    assert get_cdx(bom.components[0], "Sw360SourceFileChecked") == "true"
+    assert get_cdx(bom.components[0], "Sw360SourceFileCheck") == "passed"
     captured = capsys.readouterr()
     assert "efibootguard-0.13.zip identical to efibootguard-0.13.zip" in captured.out
     assert "checkStatus set to ACCEPTED" not in captured.out
 
-    set_cdx(bom.components[0], "Sw360SourceFileChecked", "false")
+    set_cdx(bom.components[0], "Sw360SourceFileCheck", "failed")
 
     # now let it accept attachment
     del os.environ["DAYS_BEFORE_SRC_ACCEPT"]
@@ -102,7 +102,7 @@ def test_verify_sources_extract_match(capsys, verify):
         bom = verify_sources(bom, "https://sw360.example.com", "mytoken", [], "test/fixtures")
         assert cassette.play_count == 5
 
-    assert get_cdx(bom.components[0], "Sw360SourceFileChecked") == "true"
+    assert get_cdx(bom.components[0], "Sw360SourceFileCheck") == "passed"
     captured = capsys.readouterr()
     assert "efibootguard-0.13.zip identical to efibootguard-0.13.zip" in captured.out
     assert "checkStatus set to ACCEPTED" in captured.out
@@ -122,19 +122,19 @@ def test_verify_sources_sha1_match(capsys, verify):
     with vcr_test("base.yaml") as cassette:
         bom = verify_sources(bom, "https://sw360.example.com", "mytoken", [], "test/fixtures")
         assert cassette.play_count == 3
-    assert get_cdx(bom.components[0], "Sw360SourceFileChecked") == "true"
+    assert get_cdx(bom.components[0], "Sw360SourceFileCheck") == "passed"
     captured = capsys.readouterr()
     assert "Hash match" in captured.out
     assert "checkStatus set to ACCEPTED" not in captured.out
 
-    set_cdx(bom.components[0], "Sw360SourceFileChecked", "false")
+    set_cdx(bom.components[0], "Sw360SourceFileCheck", "failed")
 
     # now let it accept attachment
     del os.environ["DAYS_BEFORE_SRC_ACCEPT"]
     with vcr_test("base.yaml") as cassette:
         bom = verify_sources(bom, "https://sw360.example.com", "mytoken", [], "test/fixtures")
         assert cassette.play_count == 4
-    assert get_cdx(bom.components[0], "Sw360SourceFileChecked") == "true"
+    assert get_cdx(bom.components[0], "Sw360SourceFileCheck") == "passed"
     captured = capsys.readouterr()
     assert "Hash match" in captured.out
     assert "checkStatus set to ACCEPTED" in captured.out
@@ -158,7 +158,7 @@ def test_verify_sources_debian_download_missing(capsys, verify):
     # use an invalid pkg directory to simulate missing file...
     bom = verify_sources(bom, "https://sw360.example.com", "mytoken", [], pkg_dir=".")
     captured = capsys.readouterr()
-    assert get_cdx(bom.components[0], "Sw360SourceFileChecked") == "false"
+    assert get_cdx(bom.components[0], "Sw360SourceFileCheck") == "failed"
     assert "local Debian source ./efibootguard-0.13.zip missing" in captured.out
 
 
@@ -171,5 +171,5 @@ def test_verify_sources_debian_download_failed(capsys, verify):
     # use an invalid pkg directory to simulate missing file...
     bom = verify_sources(bom, "https://sw360.example.com", "mytoken", [], pkg_dir=".")
     captured = capsys.readouterr()
-    assert get_cdx(bom.components[0], "Sw360SourceFileChecked") == "false"
+    assert get_cdx(bom.components[0], "Sw360SourceFileCheck") == "failed"
     assert "Skipping efibootguard 0.13+cip.debian - Debian download failed" in captured.out
