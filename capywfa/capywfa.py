@@ -202,7 +202,7 @@ def pass6_link_releases(bom, sw360_url, sw360_token, project_id, minus_id):
         filename = "project-backup-"+project_id+".json"
         write_json_to_file(project, filename)
         print("-> saved project backup to", filename)
-        linker.update_project(project_id, project, todo_bom, project_info=None)
+        linker.update_project(project_id, project, todo_bom, project_info={})
     else:
         print("WARNING: no target project given, not linking anything.")
     return todo_bom
