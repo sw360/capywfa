@@ -11,6 +11,7 @@ from capycli.common.capycli_bom_support import CycloneDxSupport
 legacy_to_cdx_prop = {
     "ComponentId": CycloneDxSupport.CDX_PROP_COMPONENT_ID,
     "MapResult": CycloneDxSupport.CDX_PROP_MAPRESULT,
+    "MapResultById": CycloneDxSupport.CDX_PROP_MAPRESULT_BY_ID,
     "Sw360Id": CycloneDxSupport.CDX_PROP_SW360ID,
     "Categories": CycloneDxSupport.CDX_PROP_CATEGORIES,
     "Sw360SourceFileCheck": "capywfa:Sw360SourceFileCheck",
