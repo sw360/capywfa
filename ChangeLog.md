@@ -7,6 +7,11 @@ SPDX-License-Identifier: MIT
 
 # CaPyWfa - Clearing workflow automation for SW360
 
+## UNRELEASED
+
+* update requests to 2.32.4 to fix CVE-2024-47081
+* deprecate Python 3.9 so we can update urllib3 to 2.5 to fix CVE-2025-50181/-50182
+
 ## 0.9.3
 
 * update CaPyCli to 2.8.0 including better PackageURL handling and release
