@@ -9,6 +9,8 @@ SPDX-License-Identifier: MIT
 
 ## UNRELEASED
 
+* SBOM properties used for workflow control were renamed from distroclearing:* to capywfa:*
+  Additionally, our property Sw360SourceFileChecked was renamed to ...Check
 * update requests to 2.32.4 to fix CVE-2024-47081
 * deprecate Python 3.9 so we can update urllib3 to 2.5 to fix CVE-2025-50181/-50182
 

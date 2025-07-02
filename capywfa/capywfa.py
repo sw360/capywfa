@@ -98,7 +98,7 @@ def pass3_download_sources(bom):
     for item in bom.components:
         if not (get_cdx(item, "MapResult") == MapResult.NO_MATCH
                 or (MapBom.is_good_match(get_cdx(item, "MapResult"))
-                    and get_cdx(item, "Sw360SourceFileChecked") != "true")):
+                    and get_cdx(item, "Sw360SourceFileCheck") != "passed")):
             set_cdx(item, "SourceFileDownload", "skip")
     return bom
 
@@ -179,7 +179,7 @@ def pass6_link_releases(bom, sw360_url, sw360_token, project_id, minus_id):
         if get_cdx(item, "Sw360Id")
         and (get_cdx(item, "MapResult") == MapResult.NO_MATCH
              or MapBom.is_good_match(get_cdx(item, "MapResult")))
-        and get_cdx(item, "Sw360SourceFileChecked") == "true"]
+        and get_cdx(item, "Sw360SourceFileCheck") == "passed"]
     print("Found", len(todo_bom.components), "releases to link.")
 
     if minus_id is not None:
@@ -328,7 +328,7 @@ def main():
     print()
     print("Verified sources:",
           len([item for item in bom.components
-              if get_cdx(item, "Sw360SourceFileChecked") == "true"]))
+              if get_cdx(item, "Sw360SourceFileCheck") == "passed"]))
 
     print()
     print("== Pass 3: Download missing and unchecked sources ==")
@@ -378,7 +378,7 @@ def main():
     missing_verification_count = len(
         [item for item in bom.components
          if MapBom.is_good_match(get_cdx(item, "MapResult"))
-         and get_cdx(item, "Sw360SourceFileChecked") != "true"])
+         and get_cdx(item, "Sw360SourceFileCheck") != "passed"])
 
     if missing_verification_count == 0:
         print("Verified all existing sources.")
@@ -401,11 +401,11 @@ def main():
     print()
     print("Verified sources:",
           len([item for item in bom.components
-              if get_cdx(item, "Sw360SourceFileChecked") == "true"]))
+              if get_cdx(item, "Sw360SourceFileCheck") == "passed"]))
     print("Invalid sources:",
           len([item for item in bom.components
               if MapBom.is_good_match(get_cdx(item, "MapResult"))
-              and get_cdx(item, "Sw360SourceFileChecked") != "true"]))
+              and get_cdx(item, "Sw360SourceFileCheck") != "passed"]))
 
     print()
     print("== Pass 6: Link releases ==")
@@ -487,7 +487,7 @@ def main():
 
     todo_unchecked = [item for item in bom.components
                       if MapBom.is_good_match(get_cdx(item, "MapResult"))
-                      and get_cdx(item, "Sw360SourceFileChecked") != "true"
+                      and get_cdx(item, "Sw360SourceFileCheck") != "passed"
                       and get_cdx(item, "SourceFileDownload") != "failed"]
     if len(todo_unchecked) > 0:
         print(len(todo_unchecked), "SW360 sources couldn't be verified.")
