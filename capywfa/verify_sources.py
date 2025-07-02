@@ -77,12 +77,12 @@ def verify_sources(bom, sw360_url, sw360_token, trusted_verifiers,
 
     for item in bom.components:
         print()
-        if get_cdx(item, "Sw360SourceFileChecked") == "true":
+        if get_cdx(item, "Sw360SourceFileCheck") == "passed":
             print("Skipping", item.name, item.version,
                   "- already checked")
             continue
 
-        set_cdx(item, "Sw360SourceFileChecked", "false")
+        set_cdx(item, "Sw360SourceFileCheck", "failed")
 
         if get_cdx(item, "MapResult") in (MapResult.MATCH_BY_NAME,
                                           MapResult.NO_MATCH):
@@ -112,7 +112,7 @@ def verify_sources(bom, sw360_url, sw360_token, trusted_verifiers,
 
         if len(sources) != 1:
             print("ERROR:", len(sources), "sources found")
-            set_cdx(item, "Sw360SourceFileChecked", "multiple sources")
+            set_cdx(item, "Sw360SourceFileCheck", "multiple-sources")
             continue
 
         attachment_id = sources[0]['_links']['self']['href']
@@ -126,7 +126,7 @@ def verify_sources(bom, sw360_url, sw360_token, trusted_verifiers,
         # print("checkStatus:", sources[0]['checkStatus'], "by", checkedby)
         if (sources[0]['checkStatus'] == 'ACCEPTED'
                 and checkedby in trusted_verifiers):
-            set_cdx(item, "Sw360SourceFileChecked", "true")
+            set_cdx(item, "Sw360SourceFileCheck", "passed")
             print("OK: Trusted verifier", checkedby,
                   "approved on", sources[0].get('checkedOn'))
             continue
@@ -137,7 +137,7 @@ def verify_sources(bom, sw360_url, sw360_token, trusted_verifiers,
             continue
 
         if sources[0]['sha1'] == CycloneDxSupport.get_source_file_hash(item):
-            set_cdx(item, "Sw360SourceFileChecked", "true")
+            set_cdx(item, "Sw360SourceFileCheck", "passed")
             print("OK: Hash match.")
             set_check_status(sw360, sw360id, sources[0], attachment_id)
             continue
@@ -180,11 +180,14 @@ def verify_sources(bom, sw360_url, sw360_token, trusted_verifiers,
             shell=True)
         if ret == 0:
             print("OK:", sw360_file, "identical to", our_file)
-            set_cdx(item, "Sw360SourceFileChecked", "true")
+            set_cdx(item, "Sw360SourceFileCheck", "passed")
             shutil.rmtree("verify/local-"+our_file+"-unzip")
             shutil.rmtree("verify/sw360-"+sw360_file+"-unzip")
             os.remove("verify/"+sw360_file)
             set_check_status(sw360, sw360id, sources[0], attachment_id)
+        else:
+            set_cdx(item, "Sw360SourceFileCheck", "failed")
+            print("ERROR - source files differ!")
 
     return bom
 
