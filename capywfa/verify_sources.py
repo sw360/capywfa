@@ -90,11 +90,6 @@ def verify_sources(bom, sw360_url, sw360_token, trusted_verifiers,
                   "- MapResult is", get_cdx(item, "MapResult"))
             continue
 
-        if get_cdx(item, "SourceFileDownload") == "failed":
-            print("Skipping", item.name, item.version,
-                  "- Debian download failed")
-            continue
-
         sw360id = get_cdx(item, "Sw360Id")
         if not sw360id:
             print("ERROR: no sw360id in BOM!")
@@ -129,6 +124,11 @@ def verify_sources(bom, sw360_url, sw360_token, trusted_verifiers,
             set_cdx(item, "Sw360SourceFileCheck", "passed")
             print("OK: Trusted verifier", checkedby,
                   "approved on", sources[0].get('checkedOn'))
+            continue
+
+        if get_cdx(item, "SourceFileDownload") == "failed":
+            print("Skipping", item.name, item.version,
+                  "- Debian download failed")
             continue
 
         source_ext_ref = CycloneDxSupport.get_ext_ref_source_file(item)
