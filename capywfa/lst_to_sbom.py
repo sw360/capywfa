@@ -9,10 +9,15 @@
 import os
 import re
 import sys
-import json
 import argparse
 import importlib.metadata
 from packageurl import PackageURL
+from cyclonedx.model import ExternalReference, ExternalReferenceType
+from cyclonedx.model.bom import Bom
+from cyclonedx.model.dependency import Dependency
+from cyclonedx.model.tool import Tool
+from cyclonedx.model.component import Component, ComponentType, Pedigree
+from cyclonedx.output.json import JsonV1Dot6
 
 DEB_SIGNED_MAP = {
     "grub-efi-amd64-signed": "grub2",  # 1+2.02+dfsg1+20 -> 2.02+dfsg1-20
@@ -66,9 +71,8 @@ def guess_alpine_version(pkg, version):
                 return ("Alpine Linux", alpine_version)
 
 
-def lst_to_sbom(format, package_list):
+def lst_to_sbom(format, package_list) -> Bom:
     packages = open(package_list)
-    components = []
     ancestor = None
     if format == "deb":
         namespace = "debian"
@@ -78,6 +82,7 @@ def lst_to_sbom(format, package_list):
         print("Unknown format", format)
         sys.exit(1)
 
+    entry_list = []
     for line in packages:
         line = line.strip()
         if line == "" or line.startswith("#"):
@@ -106,51 +111,52 @@ def lst_to_sbom(format, package_list):
                 sys.exit(1)
             ancestor = os_version
 
-        entry = {
-            "type": "library",
-            "name": src_pkg,
-            "version": src_version}
-        if entry not in components:
-            components.append(entry)
+        # We can't add the PURL yet as we don't know the
+        # Alpine version, so we store the data in a preliminary structure.
+        entry = (src_pkg, src_version)
+        if entry not in entry_list:
+            entry_list.append(entry)
 
     if format == "apk" and ancestor is None:
         print("ERROR: No Alpine version detected, can't create purls.")
         sys.exit(1)
 
-    for entry in components:
+    bom = Bom()
+    bom.metadata.component = Component(
+        type=ComponentType.OPERATING_SYSTEM,
+        name=os.path.basename(package_list))
+    root_dep = Dependency(ref=bom.metadata.component.bom_ref)
+    bom.dependencies.add(root_dep)
+    bom.metadata.tools = [
+        Tool(vendor="Siemens AG", name="capywfa",
+             version=importlib.metadata.version("capywfa"),
+             external_references=[
+                ExternalReference(
+                    type=ExternalReferenceType.WEBSITE,
+                    url="https://github.com/sw360/capywfa")])]
+
+    for entry in entry_list:
         qualifiers = {'arch': 'source'}
         if format == "apk":
             qualifiers['distro'] = f'alpine-{ancestor[1]}'
         purl = PackageURL(type=format, namespace=namespace,
-                          name=entry["name"], version=entry["version"],
+                          name=entry[0], version=entry[1],
                           qualifiers=qualifiers)
-        entry["purl"] = purl.to_string()
-
-    bom = {
-        "bomFormat": "CycloneDX",
-        "specVersion": "1.6",
-        "version": 1,
-        "metadata": {
-            "component": {
-                "type": "operating-system",
-                "name": os.path.basename(package_list)},
-            "tools": [
-                {
-                    "vendor": "Siemens AG",
-                    "name": "capywfa",
-                    "version": importlib.metadata.version("capywfa"),
-                    "externalReferences": [{
-                        "type": "website",
-                        "url": "https://github.com/sw360/capywfa"}]
-                }]},
-        "components": components}
+        comp = Component(
+            bom_ref=purl,
+            type=ComponentType.LIBRARY,
+            name=entry[0],
+            version=entry[1],
+            purl=purl)
+        root_dep.dependencies.add(Dependency(ref=comp.bom_ref))
+        bom.components.add(comp)
 
     if ancestor:
-        bom["metadata"]["component"]["pedigree"] = {
-            "ancestors": [{
-                "type": "operating-system",
-                "name": ancestor[0],
-                "version": ancestor[1]}]}
+        bom.metadata.component.pedigree = Pedigree(
+            ancestors=[Component(
+                type=ComponentType.OPERATING_SYSTEM,
+                name=ancestor[0],
+                version=ancestor[1])])
     return bom
 
 
@@ -165,8 +171,8 @@ def main():
 
     bom = lst_to_sbom(format=args.format, package_list=args.package_list)
 
-    with open(args.output_file, "w") as bom_file:
-        json.dump(bom, bom_file, indent=2)
+    JsonV1Dot6(bom=bom).output_to_file(args.output_file, indent=2)
+    print(f"SBOM written to {args.output_file}")
 
 
 if __name__ == "__main__":

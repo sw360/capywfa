@@ -26,21 +26,24 @@ def test_map_signed_packages_shim_deb10u1():
 
 def test_lst_to_sbom_alpine_3_20_apk():
     bom = lst_to_sbom("apk", "test/fixtures/alpine-3.20-apk-list.txt")
-    assert bom["metadata"]["component"]["pedigree"]["ancestors"][0]["name"] == "Alpine Linux"
-    assert bom["metadata"]["component"]["pedigree"]["ancestors"][0]["version"] == "3.20"
-    assert bom["components"][0]["purl"].startswith("pkg:apk/alpine/alpine-baselayout@3.6.5-r0")
-    assert bom["components"][1]["purl"].startswith("pkg:apk/alpine/alpine-keys@2.4-r1")
-    assert len(bom["components"]) == 4
-    for component in bom["components"]:
-        assert "distro=alpine-3.20" in component["purl"]
+
+    assert bom.metadata.component.pedigree.ancestors[0].name == "Alpine Linux"
+    assert bom.metadata.component.pedigree.ancestors[0].version == "3.20"
+    assert bom.components[0].purl.to_string().startswith("pkg:apk/alpine/"
+                                                         "alpine-baselayout@3.6.5-r0")
+    assert bom.components[1].purl.to_string().startswith("pkg:apk/alpine/alpine-keys@2.4-r1")
+    assert len(bom.components) == 4
+    for component in bom.components:
+        assert "distro=alpine-3.20" in component.purl.to_string()
 
 
 def test_lst_to_sbom_alpine_3_20_manifest():
     bom = lst_to_sbom("apk", "test/fixtures/alpine-3.20-manifest.lst")
-    assert bom["metadata"]["component"]["pedigree"]["ancestors"][0]["name"] == "Alpine Linux"
-    assert bom["metadata"]["component"]["pedigree"]["ancestors"][0]["version"] == "3.20"
-    assert bom["components"][0]["purl"].startswith("pkg:apk/alpine/alpine-baselayout@3.6.5-r0")
-    assert bom["components"][1]["purl"].startswith("pkg:apk/alpine/alpine-keys@2.4-r1")
-    assert len(bom["components"]) == 4
-    for component in bom["components"]:
-        assert "distro=alpine-3.20" in component["purl"]
+    assert bom.metadata.component.pedigree.ancestors[0].name == "Alpine Linux"
+    assert bom.metadata.component.pedigree.ancestors[0].version == "3.20"
+    assert bom.components[0].purl.to_string().startswith("pkg:apk/alpine/"
+                                                         "alpine-baselayout@3.6.5-r0")
+    assert bom.components[1].purl.to_string().startswith("pkg:apk/alpine/alpine-keys@2.4-r1")
+    assert len(bom.components) == 4
+    for component in bom.components:
+        assert "distro=alpine-3.20" in component.purl.to_string()
