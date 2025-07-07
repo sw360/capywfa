@@ -160,9 +160,12 @@ def verify_sources(bom, sw360_url, sw360_token, trusted_verifiers,
             found = glob.glob(os.path.join(sw360_unpack_path, "*"))
 
         our_file = str(source_ext_ref)
+        if our_file.startswith("file://"):
+            our_file = our_file[7:]
         our_path = os.path.join(pkg_dir, our_file)
+        our_file = os.path.basename(our_file)
         if not os.path.exists(our_path):
-            print("ERROR - local Debian source missing!")
+            print("ERROR - local Debian source", our_path, "missing!")
             continue
         our_unpack_path = "verify/local-" + our_file + "-unzip"
         os.mkdir(our_unpack_path)

@@ -159,7 +159,7 @@ def test_verify_sources_debian_download_missing(capsys, verify):
     bom = verify_sources(bom, "https://sw360.example.com", "mytoken", [], pkg_dir=".")
     captured = capsys.readouterr()
     assert get_cdx(bom.components[0], "Sw360SourceFileChecked") == "false"
-    assert "local Debian source missing" in captured.out
+    assert "local Debian source ./efibootguard-0.13.zip missing" in captured.out
 
 
 @vcr_test("base.yaml")
