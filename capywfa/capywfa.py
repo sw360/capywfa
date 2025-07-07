@@ -83,6 +83,7 @@ def pass1_map_bom(bom, sw360_url, sw360_token):
     mapper.relaxed_debian_parsing = False
     mapper.login(token=sw360_token, url=sw360_url,
                  oauth2=(len(sw360_token) > 100))
+    purls = {item.bom_ref: item.purl for item in bom.components}
     result = mapper.map_bom_to_releases(bom, check_similar=False,
                                         result_required=False, nocache=True)
     result = mapper.create_updated_bom(bom, result)
@@ -94,6 +95,9 @@ def pass1_map_bom(bom, sw360_url, sw360_token):
     for item in result.components:
         if "qualifiers-ignored" in get_cdx(item, "MapResultById").split():
             set_cdx(item, "Sw360SourceFileCheck", "force-content-check")
+            print("WARNING: SW360 purl", item.purl,
+                  "differed from BOM purl", purls[item.bom_ref])
+            item.purl = purls[item.bom_ref]
     return result
 
 
