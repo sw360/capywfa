@@ -9,6 +9,7 @@ SPDX-License-Identifier: MIT
 
 ## UNRELEASED
 
+* lst_to_sbom: add support for guessing Alpine Linux 3.22
 * update requests to 2.32.4 to fix CVE-2024-47081
 * deprecate Python 3.9 so we can update urllib3 to 2.5 to fix CVE-2025-50181/-50182
 
