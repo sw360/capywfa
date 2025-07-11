@@ -11,13 +11,14 @@ from capycli.common.capycli_bom_support import CycloneDxSupport
 legacy_to_cdx_prop = {
     "ComponentId": CycloneDxSupport.CDX_PROP_COMPONENT_ID,
     "MapResult": CycloneDxSupport.CDX_PROP_MAPRESULT,
+    "MapResultById": CycloneDxSupport.CDX_PROP_MAPRESULT_BY_ID,
     "Sw360Id": CycloneDxSupport.CDX_PROP_SW360ID,
     "Categories": CycloneDxSupport.CDX_PROP_CATEGORIES,
-    "Sw360SourceFileChecked": "distroclearing:Sw360SourceFileChecked",
-    "SourceFileDownload": "distroclearing:SourceFileDownload",
+    "Sw360SourceFileCheck": "capywfa:Sw360SourceFileCheck",
+    "SourceFileDownload": "capywfa:SourceFileDownload",
     "SourceFileType": CycloneDxSupport.CDX_PROP_SRC_FILE_TYPE,
     "SourceFileComment": CycloneDxSupport.CDX_PROP_SRC_FILE_COMMENT,
-    "Comment": "distroclearing:Comment"
+    "Comment": "capywfa:Comment"
 }
 
 
