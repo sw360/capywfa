@@ -39,7 +39,11 @@ def unpack(archive, target_dir):
         shutil.unpack_archive(archive, target_dir)
 
 
-def set_check_status(sw360, release_id, source, attachment_id):
+def set_check_status(sw360, release_id, source, attachment_id, dry_run=False):
+    if dry_run:
+        print("-> Source OK, but checkStatus update disabled. Please consider manually fixing",
+              sw360.url+"group/guest/components/-/component/release/detailRelease/"+release_id)
+        return
     min_days = int(os.environ.get("DAYS_BEFORE_SRC_ACCEPT", "14"))
     try:
         created_on = datetime.strptime(source['createdOn'], "%Y-%m-%d")
@@ -77,12 +81,14 @@ def verify_sources(bom, sw360_url, sw360_token, trusted_verifiers,
 
     for item in bom.components:
         print()
-        if get_cdx(item, "Sw360SourceFileCheck") == "passed":
+        source_check = get_cdx(item, "Sw360SourceFileCheck")
+        if source_check == "passed":
             print("Skipping", item.name, item.version,
                   "- already checked")
             continue
 
-        set_cdx(item, "Sw360SourceFileCheck", "failed")
+        if source_check != "force-content-check":
+            set_cdx(item, "Sw360SourceFileCheck", "failed")
 
         if get_cdx(item, "MapResult") in (MapResult.MATCH_BY_NAME,
                                           MapResult.NO_MATCH):
@@ -114,12 +120,14 @@ def verify_sources(bom, sw360_url, sw360_token, trusted_verifiers,
         attachment_id = sw360.get_id_from_href(attachment_id)
 
         print("checking", item.name, "release", sw360id,
-              "- attachment", attachment_id)
+              "- attachment", attachment_id,
+              "(source check forced)" if source_check == "force-content-check" else "")
         # print("createdBy:", sources[0]['createdBy'],
         #       "on", sources[0]['createdOn'])
         checkedby = sources[0].get('checkedBy', "")
         # print("checkStatus:", sources[0]['checkStatus'], "by", checkedby)
-        if (sources[0]['checkStatus'] == 'ACCEPTED'
+        if (source_check != "force-content-check"
+                and sources[0]['checkStatus'] == 'ACCEPTED'
                 and checkedby in trusted_verifiers):
             set_cdx(item, "Sw360SourceFileCheck", "passed")
             print("OK: Trusted verifier", checkedby,
@@ -139,7 +147,8 @@ def verify_sources(bom, sw360_url, sw360_token, trusted_verifiers,
         if sources[0]['sha1'] == CycloneDxSupport.get_source_file_hash(item):
             set_cdx(item, "Sw360SourceFileCheck", "passed")
             print("OK: Hash match.")
-            set_check_status(sw360, sw360id, sources[0], attachment_id)
+            set_check_status(sw360, sw360id, sources[0], attachment_id,
+                             dry_run=(source_check == "force-content-check"))
             continue
 
         sw360_file = sources[0]['filename']
@@ -184,10 +193,11 @@ def verify_sources(bom, sw360_url, sw360_token, trusted_verifiers,
             shutil.rmtree("verify/local-"+our_file+"-unzip")
             shutil.rmtree("verify/sw360-"+sw360_file+"-unzip")
             os.remove("verify/"+sw360_file)
-            set_check_status(sw360, sw360id, sources[0], attachment_id)
+            set_check_status(sw360, sw360id, sources[0], attachment_id,
+                             dry_run=(source_check == "force-content-check"))
         else:
-            set_cdx(item, "Sw360SourceFileCheck", "failed")
             print("ERROR - source files differ!")
+            set_cdx(item, "Sw360SourceFileCheck", "failed")
 
     return bom
 

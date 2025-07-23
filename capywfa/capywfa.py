@@ -83,6 +83,7 @@ def pass1_map_bom(bom, sw360_url, sw360_token):
     mapper.relaxed_debian_parsing = False
     mapper.login(token=sw360_token, url=sw360_url,
                  oauth2=(len(sw360_token) > 100))
+    purls = {item.bom_ref: item.purl for item in bom.components}
     result = mapper.map_bom_to_releases(bom, check_similar=False,
                                         result_required=False, nocache=True)
     result = mapper.create_updated_bom(bom, result)
@@ -91,6 +92,12 @@ def pass1_map_bom(bom, sw360_url, sw360_token):
         item for item in result.components
         if get_cdx(item, "MapResult") not in (
             MapResult.MATCH_BY_NAME, MapResult.SIMILAR_COMPONENT_FOUND)]
+    for item in result.components:
+        if "qualifiers-ignored" in get_cdx(item, "MapResultById").split():
+            set_cdx(item, "Sw360SourceFileCheck", "force-content-check")
+            print("WARNING: SW360 purl", item.purl,
+                  "differed from BOM purl", purls[item.bom_ref])
+            item.purl = purls[item.bom_ref]
     return result
 
 
@@ -202,7 +209,7 @@ def pass6_link_releases(bom, sw360_url, sw360_token, project_id, minus_id):
         filename = "project-backup-"+project_id+".json"
         write_json_to_file(project, filename)
         print("-> saved project backup to", filename)
-        linker.update_project(project_id, project, todo_bom, project_info=None)
+        linker.update_project(project_id, project, todo_bom, project_info={})
     else:
         print("WARNING: no target project given, not linking anything.")
     return todo_bom
@@ -303,6 +310,9 @@ def main():
     print("Release matches in SW360:",
           len([item for item in bom.components
                if MapBom.is_good_match(get_cdx(item, "MapResult"))]))
+    print("Releases with forced source file check (qualifiers didn't match):",
+          len([item for item in bom.components
+               if get_cdx(item, "Sw360SourceFileCheck") == "force-content-check"]))
     print("Component (purl) matches in SW360:",
           len([item for item in bom.components
                if get_cdx(item, "MapResult") == MapResult.NO_MATCH
@@ -316,7 +326,9 @@ def main():
     print("== Pass 2: Verify SW360 sources (quick) ==")
     print()
 
-    if get_cdx(bom.components[0], "Sw360SourceFileChecked") and not args.remap:
+    src_files_checked = [get_cdx(item, "Sw360SourceFileCheck") not in ("force-content-check", "")
+                         for item in bom.components]
+    if (any(src_files_checked) and not args.remap):
         print("BOM seems to contain check results, skipping...")
     else:
         # without pkg_dir, it will only verify SW360's attachment `checkStatus`
@@ -497,6 +509,23 @@ def main():
             """))
         print("BOM items with attachment differences:")
         for item in todo_unchecked:
+            print("-", item.name, item.version,
+                  args.url + "/group/guest/components/-/component/release/"
+                  "detailRelease/"
+                  + get_cdx(item, "Sw360Id")+"#/tab-Attachments")
+        print()
+        problem = True
+
+    todo_checked_with_qualifier_mismatch = [
+        item for item in bom.components
+        if MapBom.is_good_match(get_cdx(item, "MapResult"))
+        and "qualifiers-ignored" in get_cdx(item, "MapResultById").split()
+        and get_cdx(item, "Sw360SourceFileCheck") == "passed"]
+    if len(todo_checked_with_qualifier_mismatch) > 0:
+        print(len(todo_checked_with_qualifier_mismatch),
+              "releases with qualifier mismatch, but source file check passed.")
+        print("Releases with correct sources but deviating PURL qualifiers:")
+        for item in todo_checked_with_qualifier_mismatch:
             print("-", item.name, item.version,
                   args.url + "/group/guest/components/-/component/release/"
                   "detailRelease/"
