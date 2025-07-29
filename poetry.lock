@@ -95,8 +95,8 @@ wheel = "^0.38.4"
 [package.source]
 type = "git"
 url = "https://github.com/sw360/capycli"
-reference = "feat/purl-qualifier-search"
-resolved_reference = "8153bbd88f94bfd329574539d00b91a8fe368a8a"
+reference = "main"
+resolved_reference = "5b01eca04f1d2a567aa69fef6a32b26a9e3bb925"
 
 [[package]]
 name = "certifi"
@@ -1723,4 +1723,4 @@ propcache = ">=0.2.1"
 [metadata]
 lock-version = "2.1"
 python-versions = ">=3.10.0,<4.0"
-content-hash = "c8973730852a9cb00b535d1a0fde071acb23c04ab2f36291b53fe91d19a144e1"
+content-hash = "23ae044177b6f70d2d14f2b4ffc7f3801c35deb11a2762021de886ba3fb2b175"

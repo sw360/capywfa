@@ -78,9 +78,15 @@ def get_all_components(sw360_client):
 
 def pass1_map_bom(bom, sw360_url, sw360_token):
     mapper = MapBom()
+
     # we don't want relaxed_debian_parsing here as capycli would then ignore
     # Debian suffices (SW360 release 1.3.4 matches Debian version 1.3.4-2)
     mapper.relaxed_debian_parsing = False
+
+    # get all (PURL) matches, filtered by qualifiers
+    mapper.full_search = True  # equivalent to --matchmode=full-search
+    mapper.qualifier_match = True  # equivalent to --matchmode=qualifier-match
+
     mapper.login(token=sw360_token, url=sw360_url,
                  oauth2=(len(sw360_token) > 100))
     purls = {item.bom_ref: item.purl for item in bom.components}

@@ -23,7 +23,7 @@ requires-python = ">=3.10.0,<4.0"
 dependencies = [
     "packageurl-python (>0.11,<1.0)",
     "requests (>=2.32.0,<3.0)",
-    "capycli @ git+https://github.com/sw360/capycli@feat/purl-qualifier-search",
+    "capycli @ git+https://github.com/sw360/capycli@main",
     "sw360 (>=1.8.0,<2.0)",
 ]
 
