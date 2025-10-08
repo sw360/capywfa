@@ -7,16 +7,21 @@ SPDX-License-Identifier: MIT
 
 # CaPyWfa - Clearing workflow automation for SW360
 
-## UNRELEASED
+## 0.10.0
+
+major changes:
 
 * respect PURL qualifiers during mapping, if PURLs don't match, source attachments
   are checked and the user is informed about the result
 * SBOM properties for workflow control renamed from `distroclearing:*` to `capywfa:*`
   Additionally, our property Sw360SourceFileChecked was renamed to Sw360SourceFileCheck
+* deprecate Python 3.9 so we can update urllib3 to 2.5 to fix CVE-2025-50181/-50182
+
+new features:
+
 * lst_to_sbom: add support for guessing Alpine Linux 3.22
 * lst_to_sbom: create valid CycloneDX BOMs using the CycloneDX Python library
 * update requests to 2.32.4 to fix CVE-2024-47081
-* deprecate Python 3.9 so we can update urllib3 to 2.5 to fix CVE-2025-50181/-50182
 
 ## 0.9.3
 
