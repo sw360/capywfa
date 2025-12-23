@@ -19,7 +19,7 @@ classifiers = [
     "Programming Language :: Python :: 3 :: Only",
     "Topic :: Software Development"
 ]
-requires-python = ">=3.10.0,<4.0"
+requires-python = ">=3.11.0,<3.15"
 dependencies = [
     "packageurl-python (>0.11,<1.0)",
     "requests (>=2.32.0,<3.0)",
@@ -37,7 +37,7 @@ name = "PyPI"
 priority = "primary"
 
 [tool.poetry.group.dev.dependencies]
-vcrpy = "^7.0.0"
+vcrpy = "^8.0.0"
 flake8 = "^7.0.0"
 pytest = "^8.3.0"
 
