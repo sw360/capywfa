@@ -63,7 +63,7 @@ you have to convert your package list first:
 
 ```shell
 # convert Debian or Alpine package list to Standard BOM format:
-$ lst_to_sbom.py <package-list> package-list.json --pkg_dir /data/pkgs/
+$ lst_to_sbom.py <deb|apk> <package-list> package-list.json
 ```
 
 Now, check `capywfa.py --help` for the necessary parameters. The tool will guide
