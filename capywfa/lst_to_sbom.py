@@ -15,7 +15,6 @@ from packageurl import PackageURL
 from cyclonedx.model import ExternalReference, ExternalReferenceType
 from cyclonedx.model.bom import Bom
 from cyclonedx.model.dependency import Dependency
-from cyclonedx.model.tool import Tool
 from cyclonedx.model.component import Component, ComponentType, Pedigree
 from cyclonedx.output.json import JsonV1Dot6
 
@@ -127,13 +126,18 @@ def lst_to_sbom(format, package_list) -> Bom:
         name=os.path.basename(package_list))
     root_dep = Dependency(ref=bom.metadata.component.bom_ref)
     bom.dependencies.add(root_dep)
-    bom.metadata.tools = [
-        Tool(vendor="Siemens AG", name="capywfa",
-             version=importlib.metadata.version("capywfa"),
-             external_references=[
-                ExternalReference(
-                    type=ExternalReferenceType.WEBSITE,
-                    url="https://github.com/sw360/capywfa")])]
+
+    # Add tool component for metadata (CycloneDX 1.5+ recommended approach)
+    tool_component = Component(
+        type=ComponentType.APPLICATION,
+        name="capywfa",
+        version=importlib.metadata.version("capywfa"),
+        publisher="Siemens AG",
+        external_references=[
+            ExternalReference(
+                type=ExternalReferenceType.WEBSITE,
+                url="https://github.com/sw360/capywfa")])
+    bom.metadata.tools.components.add(tool_component)
 
     for entry in entry_list:
         qualifiers = {'arch': 'source'}
