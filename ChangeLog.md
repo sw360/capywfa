@@ -7,6 +7,12 @@ SPDX-License-Identifier: MIT
 
 # CaPyWfa - Clearing workflow automation for SW360
 
+## 0.11.0
+
+* drop support for Python 3.9 and 3.10 as CaPyCli don't support them any more.
+* update dependencies to fix some CVEs in Python requests and pyjwt
+* lst_to_sbom: produces valid CycloneDX 1.6 documents (metadata.tools changes)
+
 ## 0.10.0
 
 major changes:
