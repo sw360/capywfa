@@ -23,7 +23,7 @@ requires-python = ">=3.11.0,<3.15"
 dependencies = [
     "packageurl-python (>0.11,<1.0)",
     "requests (>=2.32.0,<3.0)",
-    "capycli @ git+https://github.com/sw360/capycli@main",
+    "capycli (>=2.11.0, <3.0)",
     "sw360 (>=1.8.0,<2.0)",
 ]
 
@@ -39,8 +39,8 @@ priority = "primary"
 [tool.poetry.group.dev.dependencies]
 vcrpy = "^8.0.0"
 flake8 = "^7.0.0"
-pytest = "^8.3.0"
+pytest = "^9.0.3"
 
 [build-system]
-requires = ["poetry>=1.0.0"]
+requires = ["poetry>=2.0.0"]
 build-backend = "poetry.masonry.api"
