@@ -9,7 +9,7 @@ SPDX-License-Identifier: MIT
 
 ## NEXT
 
-* update dependencies, including idna to fix CVE-2026-45409 and urllib3 to fix
+* update poetry.lock, including idna fix for CVE-2026-45409 and urllib3 fix for
   CVE-2026-44431 and CVE-2026-44432. When talking to a trusted SW360 server, the
   CVEs shouldn't be critical, though.
 
