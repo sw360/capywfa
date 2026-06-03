@@ -7,6 +7,12 @@ SPDX-License-Identifier: MIT
 
 # CaPyWfa - Clearing workflow automation for SW360
 
+## NEXT
+
+* update dependencies, including idna to fix CVE-2026-45409 and urllib3 to fix
+  CVE-2026-44431 and CVE-2026-44432. When talking to a trusted SW360 server, the
+  CVEs shouldn't be critical, though.
+
 ## 0.11.0
 
 * drop support for Python 3.9 and 3.10 as CaPyCli don't support them any more.
