@@ -84,7 +84,7 @@ Categories, Description).
 
 You can clone this repository and run the scripts directly.
 
-CaPyWfa should run on any recent system with Python >= 3.8.
+CaPyWfa should run on any recent system with Python >= 3.11.
 
 To run the scripts in a Python "virtual environment" with all needed
 dependencies, we use [Poetry](https://python-poetry.org/docs/)
@@ -94,14 +94,24 @@ poetry install
 poetry run python3 ./capywfa/capywfa.py ...
 ```
 
-## Installing as Python package (experimental)
+## Installing as Python package
 
-TODO: Not available on Github/PyPI yet.
+Releases are available from PyPI: https://pypi.org/project/capywfa/.
+
+While those packages run stable in CI environments here at Siemens since years,
+note CaPyWfa is still under active development and not as polished or well
+documented as I'd like it to be.
+
+So you probably better start with a local setup as described in the last
+section -- allowing you to work with the source code to understand details
+and probably fix minor issues you might run into. And please let us know about
+issues you found, especially if you're willing to contribute improvements to
+the code and documentation! ;-)
 
 ## SW360 project verification
 
 With the help of the `capycli` command and small helper scripts which are
-part of the Poetry and Docker environments, you can verify that the upload
+part of the Poetry environment, you can verify that the upload
 succeeded and already existing releases have correct sources and meta data:
 
 ```shell
