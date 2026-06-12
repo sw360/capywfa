@@ -17,7 +17,8 @@ our building blocks might be helpful for clearing of large collections of
 
 ## Clearing tools
 
-**Please refer to [ChangeLog.md](ChangeLog.md) for latest changes.
+**Please refer to [ChangeLog.md](https://github.com/sw360/capywfa/blob/main/ChangeLog.md)
+for latest changes.**
 
 These tools are designed to provide full automation e.g. for integration in CI
 pipelines, but at the same time we stay a friendly neighbour to users creating SW360
@@ -96,7 +97,7 @@ poetry run python3 ./capywfa/capywfa.py ...
 
 ## Installing as Python package
 
-Releases are available from PyPI: https://pypi.org/project/capywfa/.
+Releases are available from PyPI: [capywfa on PyPI](https://pypi.org/project/capywfa/)
 
 While those packages run stable in CI environments here at Siemens since years,
 note CaPyWfa is still under active development and not as polished or well
