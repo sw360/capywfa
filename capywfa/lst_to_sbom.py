@@ -150,7 +150,7 @@ def lst_to_sbom(format, package_list) -> Bom:
             bom_ref=purl,
             type=ComponentType.LIBRARY,
             name=entry[0],
-            version=entry[1],
+            version=entry[1] + "." + namespace,
             purl=purl)
         root_dep.dependencies.add(Dependency(ref=comp.bom_ref))
         bom.components.add(comp)

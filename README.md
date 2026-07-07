@@ -67,6 +67,9 @@ you have to convert your package list first:
 $ lst_to_sbom.py <deb|apk> <package-list> package-list.json
 ```
 
+Note, that `lst_to_sbom.py` will add `.debian` or `.alpine` suffixes to the
+component version, so that SW360 releases are named accordingly.
+
 Now, check `capywfa.py --help` for the necessary parameters. The tool will guide
 you through the process. Note that it will write an updated BOM after each step.
 In general, it should be safe to interrupt the tool and re-run it at any time.
