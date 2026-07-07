@@ -51,7 +51,9 @@ workflow. For details how to install and run the tools, see the next sections!
 CaPyWfa will perform the following tasks:
 
 1. Identify existing components (packages) and releases (versions) in SW360.
-2. Ask user to download missing sources.
+2. If downloads are needed (either because SW360 lacks the source or we want
+   to verify it), CaPyWfa will exit with code 80 and ask you to run an external
+   source downloader (see below), then re-invoke it with `--sources-downloaded`.
 3. Verify existing SW360 sources are correct (using the `verify_sources.py`
    script internally -- which can also be called separately).
 4. Create missing components and releases in SW360 and upload sources.
@@ -111,6 +113,62 @@ section -- allowing you to work with the source code to understand details
 and probably fix minor issues you might run into. And please let us know about
 issues you found, especially if you're willing to contribute improvements to
 the code and documentation! ;-)
+
+## External source downloader
+
+To avoid unnecessary downloads, CaPyWfa checks if SW360 already has the source,
+approved from a trusted verifier (see option `-vf`). If all sources are present
+in SW360 or on disk, it will continue with the next steps. If some sources are
+missing, it will exit with code 80 after pass 3 and ask you to run a downloader.
+
+We offer two ways to tell downloaders which sources to download: Any component
+where no local sources are needed is marked in the SBOM with the custom property
+`capywfa:SourceFileDownload` set to `skip`. Additionally, capywfa writes a
+plain-text file `<bom-stem>-3-download.lst` containing one PackageURL per line
+for every component that still needs a local source archive.
+
+For each successfully downloaded component, the downloader has to add a
+`distribution`-type external reference to the SBOM component with comment
+"source archive (local copy)" (as per the Siemens StandardBOM spec) and a SHA-1
+hash (as needed by SW360). The external reference URL has to point to the local
+source archive file, e.g. `file://path/to/source.tar.gz`. Note that capywfa also
+adds "source archive (local copy)" external references to the SBOM in pass 1 for
+existing SW360 sources (without downloading files!). Therefore, pass 3 removes
+external references pointing to missing files after a successful download.
+
+When you re-invoke capywfa with `--sources-downloaded`, it will mark components
+that still lack a local source archive with `capywfa:SourceFileDownload` set to
+`failed` and treat them as final download failures in subsequent passes.
+
+### Example: Debian packages with debsbom
+
+[debsbom](https://github.com/siemens/debsbom/) can download Debian source
+packages from `snapshot.debian.org` and merge them into a single archive per
+component, producing a CycloneDX BOM with the required external references.
+
+```shell
+# Download sources listed by capywfa
+cat <bom-stem>-3-download.lst | \
+    debsbom download --outdir <sources-dir> --sources
+
+# Merge debian source packages and rewrite the BOM with distribution
+# external references and hashes (has to be run on a Debian system)
+debsbom repack \
+    --dldir <sources-dir> --outdir <sources-dir> \
+    --apply-patches \
+    <bom-stem>-3-download.cdx.json \
+    <bom-stem>-3-download.packed.cdx.json
+
+# Re-invoke capywfa with the repacked BOM
+capywfa -i <bom-stem>-3-download.packed.cdx.json \
+    --sources-downloaded ...
+```
+
+### Example: Simple downloads of `source-distribution` externalReferences
+
+If your ecosystem doesn't require special handling of source packages, you can
+run `capycli bom downloadsources` to download components from URLs listed in
+the SBOM's `source-distribution` external references.
 
 ## SW360 project verification
 

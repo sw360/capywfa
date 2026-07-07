@@ -18,6 +18,11 @@ SPDX-License-Identifier: MIT
   CVEs shouldn't be critical, though.
 * capywfa: preserve CycloneDX file extension `.cdx.json` for output SBOMs
   (`<bom-stem>-1-map.cdx.json` instead of `<bom-stem>.cdx-1-map.json`)
+* capywfa: [debsbom](https://github.com/siemens/debsbom/) can now be used for
+  downloading Debian sources: capywfa writes a file with missing sources' PURLs
+  to `<bom-stem>-3-download.lst` and checks for existence of files afterwards.
+  The old downloader interface (`SourceFileDownload` == `skip`) is still
+  supported. See the new README section on source downloaders for details.
 
 ## 0.11.0
 
