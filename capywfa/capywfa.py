@@ -22,10 +22,52 @@ from capycli.common.map_result import MapResult
 from capywfa.verify_sources import verify_sources
 from capycli.bom.create_components import BomCreateComponents
 from capycli.project.create_project import CreateProject
-from cyclonedx.model import ExternalReferenceType
+from cyclonedx.model import ExternalReferenceType, HashAlgorithm
 from capywfa.cdx_support import get_cdx, set_cdx, legacy_to_cdx_prop
 
 args = None
+
+
+def validate_download_complete(item, pkg_dir):
+    """Check for usable source archive external references in a BOM component.
+
+    A "source archive (local copy)" external reference is considered usable when
+    it has a SHA-1 hash AND the referenced file exists on disk.
+
+    If any usable ref is found, all broken refs with the same (type, comment)
+    — i.e. those lacking a SHA-1 hash or pointing to a missing file — are
+    removed from the component.  Usable refs are never removed, so components
+    with multiple valid archives are left intact.
+
+    Any other external references stay unchanged.
+    """
+    valid, broken = [], []
+    for ref in item.external_references:
+        if not (ref.type == ExternalReferenceType.DISTRIBUTION
+                and ref.comment == CaPyCliBom.SOURCE_FILE_COMMENT):
+            continue
+        # Derive local filesystem path the same way CycloneDxSupport does.
+        url = str(ref.url)
+        if url.startswith("file://"):
+            path = url[7:]  # keep leading '/' for file:///
+        else:
+            path = url
+        if not os.path.isabs(path):
+            path = os.path.join(pkg_dir, path)
+
+        has_sha1 = any(h.alg == HashAlgorithm.SHA_1 for h in ref.hashes)
+        if has_sha1 and os.path.isfile(path):
+            valid.append(ref)
+        else:
+            broken.append(ref)
+
+    if not valid:
+        return False
+
+    # Prune broken duplicates now that at least one valid ref exists.
+    for ref in broken:
+        item.external_references.discard(ref)
+    return True
 
 
 def write_bom(bom, outputname, check_length=True):
@@ -107,13 +149,33 @@ def pass1_map_bom(bom, sw360_url, sw360_token):
     return result
 
 
-def pass3_download_sources(bom):
+def pass3_download_sources(bom, pkg_dir, sources_downloaded=False):
+    missing = []
     for item in bom.components:
+        # 1. Items that don't need a local source: mark skip and move on.
         if not (get_cdx(item, "MapResult") == MapResult.NO_MATCH
                 or (MapBom.is_good_match(get_cdx(item, "MapResult"))
                     and get_cdx(item, "Sw360SourceFileCheck") != "passed")):
             set_cdx(item, "SourceFileDownload", "skip")
-    return bom
+            continue
+
+        # 2. Already-known outcomes: nothing to do.
+        if get_cdx(item, "SourceFileDownload") in ("skip", "failed"):
+            continue
+
+        # 3. Downloader has already provided a valid archive.
+        if validate_download_complete(item, pkg_dir):
+            continue
+
+        # 4. Item still needs a source archive.  On re-entry after an
+        # external downloader has run, this counts as a failure; otherwise
+        # capywfa will ask the operator to fetch it.
+        if sources_downloaded:
+            set_cdx(item, "SourceFileDownload", "failed")
+        else:
+            missing.append(item)
+
+    return bom, missing
 
 
 def pass4_create_releases(bom, sw360_url, sw360_token, pkg_dir,
@@ -268,6 +330,12 @@ def main():
         "--remap", action="store_true", help=textwrap.dedent(
             """Force complete remapping (pass 1) for a BOM which already
             contains `MapResult`s."""))
+    parser.add_argument(
+        "--sources-downloaded", action="store_true", help=textwrap.dedent(
+            """The external downloader has run since the last pass 3.
+            BOM components that lack a source archive (no external reference
+            with a SHA-1 hash) will be marked `SourceFileDownload=failed` and
+            treated as final download failures in subsequent passes."""))
 
     args = parser.parse_args()
 
@@ -357,14 +425,17 @@ def main():
     print("== Pass 3: Download missing and unchecked sources ==")
     print()
 
-    bom = pass3_download_sources(bom)
+    bom, missing = pass3_download_sources(bom, args.sources,
+                                          args.sources_downloaded)
     outputbom = write_bom(bom, filename+"-3-download"+extension)
-    missing_source_count = len(
-        [item for item in bom.components
-         if not get_cdx(item, "SourceFileComment")
-         and get_cdx(item, "SourceFileDownload") not in ("skip", "failed")])
-    if missing_source_count > 0:
-        print("Please download", missing_source_count, "missing sources")
+    if missing:
+        lst_path = filename + "-3-download.lst"
+        with open(lst_path, "w") as f:
+            for item in missing:
+                f.write(str(item.purl) + "\n")
+        print("Please download", len(missing), "missing sources.")
+        print("Package URLs written to:", lst_path)
+        print("After downloading, re-run with --sources-downloaded.")
         sys.exit(80)
     else:
         print("All missing sources downloaded.")
