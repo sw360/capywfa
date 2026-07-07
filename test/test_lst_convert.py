@@ -35,6 +35,9 @@ def test_lst_to_sbom_alpine_3_20_apk():
     assert len(bom.components) == 4
     for component in bom.components:
         assert "distro=alpine-3.20" in component.purl.to_string()
+        assert component.version.endswith(".alpine")
+        assert ".alpine" not in component.purl.to_string()
+        assert component.purl.version + ".alpine" == component.version
 
 
 def test_lst_to_sbom_alpine_3_20_manifest():
@@ -47,3 +50,21 @@ def test_lst_to_sbom_alpine_3_20_manifest():
     assert len(bom.components) == 4
     for component in bom.components:
         assert "distro=alpine-3.20" in component.purl.to_string()
+        assert component.version.endswith(".alpine")
+        assert ".alpine" not in component.purl.to_string()
+        assert component.purl.version + ".alpine" == component.version
+
+
+def test_lst_to_sbom_debian_manifest():
+    bom = lst_to_sbom("deb", "test/fixtures/debian-13-manifest.lst")
+    assert bom.metadata.component.pedigree.ancestors[0].name == "Debian"
+    assert bom.metadata.component.pedigree.ancestors[0].version == "13"
+    assert len(bom.components) == 3
+
+    components = {c.name: c for c in bom.components}
+    assert components["base-files"].version == "13.8+deb13u5.debian"
+    assert ".debian" not in components["base-files"].purl.to_string()
+    assert "arch=source" in components["base-files"].purl.to_string()
+    assert components["base-files"].purl.version + ".debian" == components["base-files"].version
+
+    assert components["zlib"].version == "1:1.3.dfsg+really1.3.1-1.debian"

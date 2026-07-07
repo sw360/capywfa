@@ -9,6 +9,10 @@ SPDX-License-Identifier: MIT
 
 ## NEXT
 
+* lst_to_sbom: restore `.debian` / `.alpine` suffix on component version that
+  was inadvertently dropped in the Alpine `distro` qualifier refactor (99778a6).
+  The PURL keeps the clean package version; the SBOM component's `version`
+  carries the suffix so SW360 releases are named e.g. `3.1.23-1.debian`.
 * update poetry.lock, including idna fix for CVE-2026-45409 and urllib3 fix for
   CVE-2026-44431 and CVE-2026-44432. When talking to a trusted SW360 server, the
   CVEs shouldn't be critical, though.
