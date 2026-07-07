@@ -275,7 +275,12 @@ def main():
         print("ERROR: inputfile not found:", args.input)
         sys.exit(1)
 
-    filename, extension = os.path.splitext(args.input)
+    if args.input.endswith(".cdx.json"):
+        filename = args.input[:-9]
+        extension = ".cdx.json"
+    else:
+        print("WARNING: input file doesn't end with .cdx.json")
+        filename, extension = os.path.splitext(args.input)
     bom = CaPyCliBom.read_sbom(args.input)
     print()
     print("Read", len(bom.components), "entries from", args.input+".")
