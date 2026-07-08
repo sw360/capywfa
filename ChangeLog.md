@@ -7,26 +7,29 @@ SPDX-License-Identifier: MIT
 
 # CaPyWfa - Clearing workflow automation for SW360
 
-## NEXT
+## 0.12.0
+
+This contains a number of more invasive changes which should be mostly backwards
+compatible, but please check the details below.
 
 * lst_to_sbom: restore `.debian` / `.alpine` suffix on component version that
   was inadvertently dropped in the Alpine `distro` qualifier refactor (99778a6).
   The PURL keeps the clean package version; the SBOM component's `version`
   carries the suffix so SW360 releases are named e.g. `3.1.23-1.debian`.
-* update poetry.lock, including idna fix for CVE-2026-45409 and urllib3 fix for
-  CVE-2026-44431 and CVE-2026-44432. When talking to a trusted SW360 server, the
-  CVEs shouldn't be critical, though.
-* capywfa: preserve CycloneDX file extension `.cdx.json` for output SBOMs
-  (`<bom-stem>-1-map.cdx.json` instead of `<bom-stem>.cdx-1-map.json`)
 * capywfa: [debsbom](https://github.com/siemens/debsbom/) can now be used for
   downloading Debian sources: capywfa writes a file with missing sources' PURLs
   to `<bom-stem>-3-download.lst` and checks for existence of files afterwards.
   The old downloader interface (`SourceFileDownload` == `skip`) is still
   supported. See the new README section on source downloaders for details.
+* capywfa: preserve CycloneDX file extension `.cdx.json` for output SBOMs
+  (`<bom-stem>-1-map.cdx.json` instead of `<bom-stem>.cdx-1-map.json`)
 * `source archive (local copy)` externalReference URLs are now handling the
   `file:` scheme per the Siemens Standard BOM spec: prefix and any leading
   slashes are stripped and the remainder is treated as a relative path to where
   the SBOM is stored or to the `--sources` directory.
+* update poetry.lock, including idna fix for CVE-2026-45409 and urllib3 fix for
+  CVE-2026-44431 and CVE-2026-44432. When talking to a trusted SW360 server, the
+  CVEs shouldn't be critical, though.
 
 ## 0.11.0
 
