@@ -23,6 +23,10 @@ SPDX-License-Identifier: MIT
   to `<bom-stem>-3-download.lst` and checks for existence of files afterwards.
   The old downloader interface (`SourceFileDownload` == `skip`) is still
   supported. See the new README section on source downloaders for details.
+* `source archive (local copy)` externalReference URLs are now handling the
+  `file:` scheme per the Siemens Standard BOM spec: prefix and any leading
+  slashes are stripped and the remainder is treated as a relative path to where
+  the SBOM is stored or to the `--sources` directory.
 
 ## 0.11.0
 
