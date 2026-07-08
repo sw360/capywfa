@@ -23,16 +23,17 @@ from capywfa.verify_sources import verify_sources
 from capycli.bom.create_components import BomCreateComponents
 from capycli.project.create_project import CreateProject
 from cyclonedx.model import ExternalReferenceType, HashAlgorithm
-from capywfa.cdx_support import get_cdx, set_cdx, legacy_to_cdx_prop
+from capywfa.cdx_support import get_cdx, set_cdx, legacy_to_cdx_prop, resolve_local_source_url
 
 args = None
 
 
-def validate_download_complete(item, pkg_dir):
+def validate_download_complete(item, sbom_dir, pkg_dir):
     """Check for usable source archive external references in a BOM component.
 
     A "source archive (local copy)" external reference is considered usable when
-    it has a SHA-1 hash AND the referenced file exists on disk.
+    it has a SHA-1 hash AND the referenced file exists on disk, resolved per
+    Standard BOM spec (relative to sbom_dir) with pkg_dir as legacy fallback.
 
     If any usable ref is found, all broken refs with the same (type, comment)
     — i.e. those lacking a SHA-1 hash or pointing to a missing file — are
@@ -46,17 +47,9 @@ def validate_download_complete(item, pkg_dir):
         if not (ref.type == ExternalReferenceType.DISTRIBUTION
                 and ref.comment == CaPyCliBom.SOURCE_FILE_COMMENT):
             continue
-        # Derive local filesystem path the same way CycloneDxSupport does.
-        url = str(ref.url)
-        if url.startswith("file://"):
-            path = url[7:]  # keep leading '/' for file:///
-        else:
-            path = url
-        if not os.path.isabs(path):
-            path = os.path.join(pkg_dir, path)
-
         has_sha1 = any(h.alg == HashAlgorithm.SHA_1 for h in ref.hashes)
-        if has_sha1 and os.path.isfile(path):
+        path = resolve_local_source_url(str(ref.url), sbom_dir, pkg_dir)
+        if has_sha1 and path:
             valid.append(ref)
         else:
             broken.append(ref)
@@ -149,7 +142,7 @@ def pass1_map_bom(bom, sw360_url, sw360_token):
     return result
 
 
-def pass3_download_sources(bom, pkg_dir, sources_downloaded=False):
+def pass3_download_sources(bom, sbom_dir, pkg_dir, sources_downloaded=False):
     missing = []
     for item in bom.components:
         # 1. Items that don't need a local source: mark skip and move on.
@@ -164,7 +157,7 @@ def pass3_download_sources(bom, pkg_dir, sources_downloaded=False):
             continue
 
         # 3. Downloader has already provided a valid archive.
-        if validate_download_complete(item, pkg_dir):
+        if validate_download_complete(item, sbom_dir, pkg_dir):
             continue
 
         # 4. Item still needs a source archive.  On re-entry after an
@@ -343,6 +336,14 @@ def main():
         print("ERROR: inputfile not found:", args.input)
         sys.exit(1)
 
+    sbom_dir = os.path.dirname(os.path.abspath(args.input))
+    if os.path.abspath(args.sources) != sbom_dir:
+        print()
+        print("WARNING: --sources directory differs from the SBOM's parent directory.")
+        print("According to Siemens Standard BOM packages, source archives should")
+        print("live alongside the SBOM.")
+        print()
+
     if args.input.endswith(".cdx.json"):
         filename = args.input[:-9]
         extension = ".cdx.json"
@@ -413,7 +414,8 @@ def main():
         # without pkg_dir, it will only verify SW360's attachment `checkStatus`
         confirm("Press ENTER to continue or CTRL-C to interrupt.")
         bom = verify_sources(bom, args.url, args.token,
-                             trusted_verifiers=args.trusted_verifiers, pkg_dir=None)
+                             trusted_verifiers=args.trusted_verifiers,
+                             sbom_dir=None, pkg_dir=None)
         write_bom(bom, filename+"-2-sourceverify-quick"+extension)
 
     print()
@@ -425,7 +427,7 @@ def main():
     print("== Pass 3: Download missing and unchecked sources ==")
     print()
 
-    bom, missing = pass3_download_sources(bom, args.sources,
+    bom, missing = pass3_download_sources(bom, sbom_dir, args.sources,
                                           args.sources_downloaded)
     outputbom = write_bom(bom, filename+"-3-download"+extension)
     if missing:
@@ -488,7 +490,8 @@ def main():
         if not os.path.exists("verify"):
             os.mkdir("verify")
 
-            bom = verify_sources(bom, args.url, args.token, pkg_dir=args.sources,
+            bom = verify_sources(bom, args.url, args.token,
+                                 sbom_dir=sbom_dir, pkg_dir=args.sources,
                                  trusted_verifiers=args.trusted_verifiers)
             outputbom = write_bom(bom, filename+"-5-sourceverify"+extension)
 

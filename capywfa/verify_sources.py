@@ -20,7 +20,7 @@ import requests
 import argparse
 from datetime import datetime
 from sw360 import SW360, SW360Error
-from capywfa.cdx_support import get_cdx, set_cdx
+from capywfa.cdx_support import get_cdx, set_cdx, resolve_local_source_url
 from capycli.common.capycli_bom_support import CaPyCliBom, CycloneDxSupport
 from capycli.common.map_result import MapResult
 
@@ -70,7 +70,7 @@ def set_check_status(sw360, release_id, source, attachment_id, dry_run=False):
 
 
 def verify_sources(bom, sw360_url, sw360_token, trusted_verifiers,
-                   pkg_dir=None):
+                   sbom_dir=None, pkg_dir=None):
     if len(sw360_token) > 100:
         oauth2 = True
     else:
@@ -140,7 +140,7 @@ def verify_sources(bom, sw360_url, sw360_token, trusted_verifiers,
             continue
 
         source_ext_ref = CycloneDxSupport.get_ext_ref_source_file(item)
-        if (not source_ext_ref or pkg_dir is None):
+        if not source_ext_ref or (pkg_dir is None and sbom_dir is None):
             print("WARNING: no sources available, skipping check")
             continue
 
@@ -168,14 +168,12 @@ def verify_sources(bom, sw360_url, sw360_token, trusted_verifiers,
             sw360_unpack_path = found[0]
             found = glob.glob(os.path.join(sw360_unpack_path, "*"))
 
-        our_file = str(source_ext_ref)
-        if our_file.startswith("file://"):
-            our_file = our_file[7:]
-        our_path = os.path.join(pkg_dir, our_file)
-        our_file = os.path.basename(our_file)
-        if not os.path.exists(our_path):
-            print("ERROR - local Debian source", our_path, "missing!")
+        our_path = resolve_local_source_url(
+            source_ext_ref, sbom_dir or "", pkg_dir or "")
+        if not our_path:
+            print("ERROR - local source", source_ext_ref, "missing!")
             continue
+        our_file = os.path.basename(our_path)
         our_unpack_path = "verify/local-" + our_file + "-unzip"
         os.mkdir(our_unpack_path)
         unpack(our_path, our_unpack_path)
@@ -220,6 +218,7 @@ def main():
                    sw360_url=args.sw360_url,
                    sw360_token=args.sw360_token,
                    trusted_verifiers=args.trusted_verifiers,
+                   sbom_dir=os.path.dirname(os.path.abspath(args.input)),
                    pkg_dir=args.sources)
 
 

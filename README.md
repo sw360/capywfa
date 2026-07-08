@@ -129,12 +129,17 @@ for every component that still needs a local source archive.
 
 For each successfully downloaded component, the downloader has to add a
 `distribution`-type external reference to the SBOM component with comment
-"source archive (local copy)" (as per the Siemens StandardBOM spec) and a SHA-1
-hash (as needed by SW360). The external reference URL has to point to the local
-source archive file, e.g. `file://path/to/source.tar.gz`. Note that capywfa also
-adds "source archive (local copy)" external references to the SBOM in pass 1 for
-existing SW360 sources (without downloading files!). Therefore, pass 3 removes
-external references pointing to missing files after a successful download.
+`"source archive (local copy)"` (as per the Siemens Standard BOM spec) and a
+SHA-1 hash. The URL must be a **relative** path using the `file:` scheme,
+resolved against the SBOM document's parent directory — for example
+`file:///sources/<sha1>/<filename>`. capywfa strips the `file:` scheme prefix
+and any leading slashes, then looks for the file relative to the SBOM's
+directory first, and relative to `--sources` as a fallback.
+
+Note that capywfa also adds `"source archive (local copy)"` external references
+to the SBOM in pass 1 for existing SW360 sources (without downloading files!).
+Therefore, after a successful download, pass 3 removes external references
+pointing to missing files.
 
 When you re-invoke capywfa with `--sources-downloaded`, it will mark components
 that still lack a local source archive with `capywfa:SourceFileDownload` set to
