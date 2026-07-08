@@ -1,6 +1,6 @@
-# SPDX-FileCopyrightText: 2021-2025 Siemens
-# SPDX-FileContributor: Thomas Graf <thomas.graf@siemens.com>
+# SPDX-FileCopyrightText: 2021-2026 Siemens
 # SPDX-FileContributor: Gernot Hillier <gernot.hillier@siemens.com>
+# SPDX-FileContributor: Thomas Graf <thomas.graf@siemens.com>
 # SPDX-License-Identifier: MIT
 
 name: Unit Tests
@@ -23,10 +23,10 @@ jobs:
 
     steps:
       - name: Checkout code
-        uses: actions/checkout@v3
+        uses: actions/checkout@v6
 
       - name: Set up Python ${{ matrix.python-version }}
-        uses: actions/setup-python@v4
+        uses: actions/setup-python@v6
         with:
           python-version: ${{ matrix.python-version }}
 
