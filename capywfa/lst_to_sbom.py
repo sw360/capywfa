@@ -1,7 +1,7 @@
 #!/usr/bin/python3
 
-# SPDX-FileCopyrightText: 2019-2025 Siemens
-# SPDX-FileCopyrightText: 2019-2025 Siemens Healthineers
+# SPDX-FileCopyrightText: 2019-2026 Siemens
+# SPDX-FileCopyrightText: 2019-2026 Siemens Healthineers
 # SPDX-FileContributor: Gernot Hillier <gernot.hillier@siemens.com>
 #
 # SPDX-License-Identifier: MIT
@@ -60,7 +60,10 @@ ALPINE_MATCH_TABLE = (
     (r"3\.4\.3-r2", "3.19"),
     (r"3\.6\.5-r0", "3.20"),
     (r"3\.6\.8-r[01]", "3.21"),
-    (r"3\.7\.0-r0", "3.22"))
+    (r"3\.7\.0-r0", "3.22"),
+    (r"3\.7\.1-r8", "3.23"),
+    (r"3\.7\.2-r0", "3.23"),
+    (r"3\.7\.2-r1", "3.24"))
 
 
 def guess_alpine_version(pkg, version):

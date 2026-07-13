@@ -1,11 +1,15 @@
 <!--
-SPDX-FileCopyrightText: 2019-2025 Siemens
-SPDX-FileCopyrightText: 2019-2025 Siemens Healthineers
+SPDX-FileCopyrightText: 2019-2026 Siemens
+SPDX-FileCopyrightText: 2019-2026 Siemens Healthineers
 
 SPDX-License-Identifier: MIT
 -->
 
 # CaPyWfa - Clearing workflow automation for SW360
+
+## UNRELEASED
+
+* lst_to_sbom: add Alpine 3.23 and 3.24 guessing support
 
 ## 0.12.0
 
