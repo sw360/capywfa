@@ -7,7 +7,7 @@ SPDX-License-Identifier: MIT
 
 # CaPyWfa - Clearing workflow automation for SW360
 
-## UNRELEASED
+## 0.12.1
 
 * lst_to_sbom: add Alpine 3.23 and 3.24 guessing support
 

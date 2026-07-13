@@ -1,11 +1,11 @@
-# SPDX-FileCopyrightText: 2019-2025 Siemens
-# SPDX-FileCopyrightText: 2019-2025 Siemens Healthineers
+# SPDX-FileCopyrightText: 2019-2026 Siemens
+# SPDX-FileCopyrightText: 2019-2026 Siemens Healthineers
 #
 # SPDX-License-Identifier: MIT
 
 [project]
 name = "capywfa"
-version = "0.12.0"
+version = "0.12.1"
 description = "Clearing workflow automation for SW360"
 readme = "README.md"
 license = { text = "MIT" }
