@@ -329,6 +329,11 @@ def main():
             BOM components that lack a source archive (no external reference
             with a SHA-1 hash) will be marked `SourceFileDownload=failed` and
             treated as final download failures in subsequent passes."""))
+    parser.add_argument(
+        "--no-set-accepted", action="store_true", help=textwrap.dedent(
+            """Don't set checkStatus to ACCEPTED in SW360 for verified sources.
+            Avoids triggering moderation requests; the source is still marked
+            as verified locally."""))
 
     args = parser.parse_args()
 
@@ -415,7 +420,8 @@ def main():
         confirm("Press ENTER to continue or CTRL-C to interrupt.")
         bom = verify_sources(bom, args.url, args.token,
                              trusted_verifiers=args.trusted_verifiers,
-                             sbom_dir=None, pkg_dir=None)
+                             sbom_dir=None, pkg_dir=None,
+                             set_accepted=not args.no_set_accepted)
         write_bom(bom, filename+"-2-sourceverify-quick"+extension)
 
     print()
@@ -492,7 +498,8 @@ def main():
 
             bom = verify_sources(bom, args.url, args.token,
                                  sbom_dir=sbom_dir, pkg_dir=args.sources,
-                                 trusted_verifiers=args.trusted_verifiers)
+                                 trusted_verifiers=args.trusted_verifiers,
+                                 set_accepted=not args.no_set_accepted)
             outputbom = write_bom(bom, filename+"-5-sourceverify"+extension)
 
     print()

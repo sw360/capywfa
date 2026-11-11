@@ -70,7 +70,7 @@ def set_check_status(sw360, release_id, source, attachment_id, dry_run=False):
 
 
 def verify_sources(bom, sw360_url, sw360_token, trusted_verifiers,
-                   sbom_dir=None, pkg_dir=None):
+                   sbom_dir=None, pkg_dir=None, set_accepted=True):
     if len(sw360_token) > 100:
         oauth2 = True
     else:
@@ -148,7 +148,8 @@ def verify_sources(bom, sw360_url, sw360_token, trusted_verifiers,
             set_cdx(item, "Sw360SourceFileCheck", "passed")
             print("OK: Hash match.")
             set_check_status(sw360, sw360id, sources[0], attachment_id,
-                             dry_run=(source_check == "force-content-check"))
+                             dry_run=(source_check == "force-content-check"
+                                      or not set_accepted))
             continue
 
         sw360_file = sources[0]['filename']
@@ -192,7 +193,8 @@ def verify_sources(bom, sw360_url, sw360_token, trusted_verifiers,
             shutil.rmtree("verify/sw360-"+sw360_file+"-unzip")
             os.remove("verify/"+sw360_file)
             set_check_status(sw360, sw360id, sources[0], attachment_id,
-                             dry_run=(source_check == "force-content-check"))
+                             dry_run=(source_check == "force-content-check"
+                                      or not set_accepted))
         else:
             print("ERROR - source files differ!")
             set_cdx(item, "Sw360SourceFileCheck", "failed")
@@ -209,6 +211,8 @@ def main():
     parser.add_argument("-s", "--sources", help="package directory containing sources")
     parser.add_argument("-vf", "--trusted-verifiers", help="Trusted attachment verifiers",
                         metavar="EMAIL", nargs="+", required=True)
+    parser.add_argument("--no-set-accepted", action="store_true",
+                        help="Don't set checkStatus to ACCEPTED in SW360 for verified sources")
     args = parser.parse_args()
 
     bom = CaPyCliBom.read_sbom(args.input)
@@ -219,7 +223,8 @@ def main():
                    sw360_token=args.sw360_token,
                    trusted_verifiers=args.trusted_verifiers,
                    sbom_dir=os.path.dirname(os.path.abspath(args.input)),
-                   pkg_dir=args.sources)
+                   pkg_dir=args.sources,
+                   set_accepted=not args.no_set_accepted)
 
 
 if __name__ == "__main__":
