@@ -157,6 +157,25 @@ def test_verify_sources_sha1_match(capsys, verify):
     assert "checkStatus set to ACCEPTED" in captured.out
 
 
+def test_verify_sources_set_accepted_disabled(capsys, verify):
+    bom = create_test_bom()
+    add_test_bom_ext_ref(bom)
+    bom.components[0].external_references[0].hashes.add(HashType(
+        alg=HashAlgorithm.SHA_1,
+        content=SHA1
+        )
+    )
+
+    with vcr_test("base.yaml") as cassette:
+        bom = verify_sources(bom, "https://sw360.example.com", "mytoken", [],
+                             sbom_dir=FIXTURES, set_accepted=False)
+        assert cassette.play_count == 3
+    assert get_cdx(bom.components[0], "Sw360SourceFileCheck") == "passed"
+    captured = capsys.readouterr()
+    assert "checkStatus update disabled" in captured.out
+    assert "checkStatus set to ACCEPTED" not in captured.out
+
+
 @vcr_test("download_failed.yaml")
 def test_verify_sources_sw360_download_failed(capsys, verify):
     bom = create_test_bom()
