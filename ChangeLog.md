@@ -7,6 +7,18 @@ SPDX-License-Identifier: MIT
 
 # CaPyWfa - Clearing workflow automation for SW360
 
+## NEXT
+
+* add `--no-set-accepted` flag to skip setting attachments to `ACCEPTED` in
+  SW360 for verified sources. Accepting attachments avoids repeated downloads,
+  but can trigger moderation requests
+* capywfa: SW360 auth token can be provided in the `SW360ProductionToken` env
+  variable, keeping credentials out of process lists and shell history.
+* switch build backend to `poetry.core.masonry.api`, enabling PEP 660 editable
+  installs with standards-compliant installers such as uv or pip >= 21.3.
+* update poetry.lock, including CaPyCli 2.12.0, cyclonedx-python-lib 11.12.0,
+  pyjwt 2.15.1 and urllib3 2.8.0.
+
 ## 0.12.1
 
 * lst_to_sbom: add Alpine 3.23 and 3.24 guessing support
