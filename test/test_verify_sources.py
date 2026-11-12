@@ -3,7 +3,7 @@
 #
 # SPDX-License-Identifier: MIT
 
-from capywfa.verify_sources import verify_sources
+from capywfa.verify_sources import verify_sources, split_verifiers
 from capywfa.cdx_support import set_cdx, get_cdx, remove_cdx
 from cyclonedx.model.bom import Bom
 from cyclonedx.model.component import Component, ComponentType
@@ -73,6 +73,12 @@ def verify():
     yield "verify"
 
     shutil.rmtree("verify")
+
+
+def test_split_verifiers():
+    assert split_verifiers(["foo@bar.com alice@example.com", "carol@x.org"]) == [
+        "foo@bar.com", "alice@example.com", "carol@x.org"]
+    assert split_verifiers([]) == []
 
 
 @vcr_test("base.yaml")

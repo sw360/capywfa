@@ -69,8 +69,13 @@ def set_check_status(sw360, release_id, source, attachment_id, dry_run=False):
         print("-> checkStatus set to ACCEPTED.")
 
 
+def split_verifiers(args):
+    return [v for arg in args for v in arg.split()]
+
+
 def verify_sources(bom, sw360_url, sw360_token, trusted_verifiers,
                    sbom_dir=None, pkg_dir=None, set_accepted=True):
+    trusted_verifiers = split_verifiers(trusted_verifiers)
     if len(sw360_token) > 100:
         oauth2 = True
     else:
