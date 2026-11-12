@@ -299,9 +299,12 @@ def main():
         help=textwrap.dedent(
             """SW360 instance to use"""))
     parser.add_argument(
-        "-t", "--token", required=True, help=textwrap.dedent(
+        "-t", "--token", default=os.environ.get("SW360ProductionToken"),
+        help=textwrap.dedent(
             """SW360 auth token string. If the token is longer than 100
-            characters, it's regarded as OAuth token."""))
+            characters, it's regarded as OAuth token. Defaults to the
+            SW360ProductionToken environment variable, which keeps the token
+            out of the process list and shell history."""))
     parser.add_argument(
         "-vf", "--trusted-verifiers", metavar="EMAIL", nargs="+", required=True,
         help=textwrap.dedent(
@@ -331,6 +334,8 @@ def main():
             treated as final download failures in subsequent passes."""))
 
     args = parser.parse_args()
+    if not args.token:
+        parser.error("no SW360 token: use --token or set SW360ProductionToken")
 
     if not os.path.exists(args.input):
         print("ERROR: inputfile not found:", args.input)
