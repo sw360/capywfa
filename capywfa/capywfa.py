@@ -444,8 +444,7 @@ def main():
     if missing:
         lst_path = filename + "-3-download.lst"
         with open(lst_path, "w") as f:
-            for item in missing:
-                f.write(str(item.purl) + "\n")
+            f.writelines(str(item.purl) + "\n" for item in missing)
         print("Please download", len(missing), "missing sources.")
         print("Package URLs written to:", lst_path)
         print("After downloading, re-run with --sources-downloaded.")
