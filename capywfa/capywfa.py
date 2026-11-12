@@ -546,11 +546,11 @@ def main():
         print(len(todo_unmapped), "components couldn't be found in SW360.")
         print(textwrap.dedent("""
             Please check the following entries in BOM or in SW360 and:
-            - add property %s of existing SW360 component in latest full BOM
+            - add property {} of existing SW360 component in latest full BOM
             - OR add `package-url` in SW360 and re-run with `--remap`
-            - OR add `description`, ext ref %s, and property %s to BOM to
+            - OR add `description`, ext ref {}, and property {} to BOM to
               create new SW360 component
-            """ % (
+            """.format(
                 legacy_to_cdx_prop["ComponentId"],
                 ExternalReferenceType.WEBSITE,
                 legacy_to_cdx_prop["Categories"]
