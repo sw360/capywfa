@@ -35,8 +35,7 @@ def map_signed_packages(pkg, version):
     if pkg in DEB_SIGNED_MAP:
         print("WARNING: Signed source found, mapping", pkg, version, end=" ")
         pkg = DEB_SIGNED_MAP[pkg]
-        if version.startswith("1+"):
-            version = version[2:]
+        version = version.removeprefix("1+")
         if "+deb" in version:
             version, deb_suffix = version.rsplit("+deb")
             deb_suffix = "+deb" + deb_suffix
