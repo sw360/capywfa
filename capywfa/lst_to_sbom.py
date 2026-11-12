@@ -73,7 +73,6 @@ def guess_alpine_version(pkg, version):
 
 
 def lst_to_sbom(format, package_list) -> Bom:
-    packages = open(package_list)
     ancestor = None
     if format == "deb":
         namespace = "debian"
@@ -84,39 +83,40 @@ def lst_to_sbom(format, package_list) -> Bom:
         sys.exit(1)
 
     entry_list = []
-    for line in packages:
-        line = line.strip()
-        if line == "" or line.startswith("#"):
-            continue
+    with open(package_list) as packages:
+        for line in packages:
+            line = line.strip()
+            if line == "" or line.startswith("#"):
+                continue
 
-        if format == "apk" and "{" in line and "|" not in line:
-            bin_pkg, _, src_pkg, _ = line.split(maxsplit=3)
-            _, version, rel = bin_pkg.rsplit("-", 2)
-            src_version = version + "-" + rel
-            src_pkg = src_pkg.strip("{}")
-        else:
-            src_pkg, src_version, _, _ = line.split("|")
+            if format == "apk" and "{" in line and "|" not in line:
+                bin_pkg, _, src_pkg, _ = line.split(maxsplit=3)
+                _, version, rel = bin_pkg.rsplit("-", 2)
+                src_version = version + "-" + rel
+                src_pkg = src_pkg.strip("{}")
+            else:
+                src_pkg, src_version, _, _ = line.split("|")
 
-        if format == "deb" and "signed" in src_pkg:
-            src_pkg, src_version = map_signed_packages(src_pkg, src_version)
+            if format == "deb" and "signed" in src_pkg:
+                src_pkg, src_version = map_signed_packages(src_pkg, src_version)
 
-        os_version = None
-        if format == "apk" and src_pkg == "alpine-baselayout":
-            os_version = guess_alpine_version(src_pkg, src_version)
-        if format == "deb" and src_pkg == "base-files":
-            os_version = ("Debian", src_version[0:2])
-        if os_version:
-            print("Detected", " ".join(os_version))
-            if ancestor and os_version != ancestor:
-                print("ERROR: Detected multiple OS versions.")
-                sys.exit(1)
-            ancestor = os_version
+            os_version = None
+            if format == "apk" and src_pkg == "alpine-baselayout":
+                os_version = guess_alpine_version(src_pkg, src_version)
+            if format == "deb" and src_pkg == "base-files":
+                os_version = ("Debian", src_version[0:2])
+            if os_version:
+                print("Detected", " ".join(os_version))
+                if ancestor and os_version != ancestor:
+                    print("ERROR: Detected multiple OS versions.")
+                    sys.exit(1)
+                ancestor = os_version
 
-        # We can't add the PURL yet as we don't know the
-        # Alpine version, so we store the data in a preliminary structure.
-        entry = (src_pkg, src_version)
-        if entry not in entry_list:
-            entry_list.append(entry)
+            # We can't add the PURL yet as we don't know the
+            # Alpine version, so we store the data in a preliminary structure.
+            entry = (src_pkg, src_version)
+            if entry not in entry_list:
+                entry_list.append(entry)
 
     if format == "apk" and ancestor is None:
         print("ERROR: No Alpine version detected, can't create purls.")
