@@ -1,5 +1,3 @@
-#!/usr/bin/python3
-
 # SPDX-FileCopyrightText: 2019-2025 Siemens
 # SPDX-FileCopyrightText: 2019-2025 Siemens Healthineers
 # SPDX-FileContributor: Gernot Hillier <gernot.hillier@siemens.com>
