@@ -9,11 +9,13 @@
 #
 # Verify uploaded sources in SW360 are identical to local ones.
 #
-# Note this is vulnerable against archives with absolute or relative ../../
-# paths. Use in virtual environments only (at your own risk).
+# Note this is not protected against denial of service (huge archives).
+# Use in virtual environments only (at your own risk).
 
 import os
-import subprocess
+import difflib
+import filecmp
+import hashlib
 import shutil
 import glob
 import requests
@@ -24,19 +26,71 @@ from capywfa.cdx_support import get_cdx, set_cdx, resolve_local_source_url
 from capycli.common.capycli_bom_support import CaPyCliBom, CycloneDxSupport
 from capycli.common.map_result import MapResult
 
+MAX_DIFF_SIZE = 1 << 20  # difflib gets too slow on bigger files
+
 
 def unpack(archive, target_dir):
     # TODO: inspect content to avoid overwriting files outside target_dir
     if archive.endswith(".gem"):
-        shutil.unpack_archive(archive, target_dir, "tar")
+        shutil.unpack_archive(archive, target_dir, "tar", filter="data")
         data_tar = os.path.join(target_dir, "data.tar.gz")
         all_tars = glob.glob(target_dir+"/*")
         data_target_dir = os.path.join(target_dir, "data")
-        shutil.unpack_archive(data_tar, data_target_dir)
+        shutil.unpack_archive(data_tar, data_target_dir, filter="data")
         for tar in all_tars:
             os.remove(tar)
-    else:
+    elif archive.endswith(".zip"):
         shutil.unpack_archive(archive, target_dir)
+    else:
+        shutil.unpack_archive(archive, target_dir, filter="data")
+
+
+def sha256_file(path):
+    with open(path, "rb") as f:
+        return hashlib.file_digest(f, "sha256").hexdigest()
+
+
+def is_binary(path):
+    # same heuristic as git: NUL in first 8000 bytes
+    with open(path, "rb") as f:
+        return b"\0" in f.read(8000)
+
+
+def compare_files(left, right):
+    if sha256_file(left) == sha256_file(right):
+        return
+    if is_binary(left) or is_binary(right):
+        yield f"Binary files {left} and {right} differ"
+        return
+    if max(os.path.getsize(left), os.path.getsize(right)) > MAX_DIFF_SIZE:
+        yield f"Files {left} and {right} differ (too big to diff)"
+        return
+    with open(left, "rb") as fl, open(right, "rb") as fr:
+        a, b = fl.read(), fr.read()
+    for line in difflib.diff_bytes(difflib.unified_diff, a.splitlines(True), b.splitlines(True),
+                                   left.encode(), right.encode()):
+        yield line.decode(errors="replace").rstrip("\n")
+
+
+def compare_trees(left, right):
+    if os.path.islink(left) or os.path.islink(right):
+        # never follow links: a dir link can loop back into the tree
+        if not (os.path.islink(left) and os.path.islink(right)
+                and os.readlink(left) == os.readlink(right)):
+            yield f"Symlinks {left} and {right} differ"
+    elif os.path.isdir(left) and os.path.isdir(right):
+        # don't use dc.diff_files: dircmp only compares size+mtime
+        dc = filecmp.dircmp(left, right, ignore=[])  # default skips .git, tags, etc.
+        for name in dc.left_only:
+            yield f"Only in {left}: {name}"
+        for name in dc.right_only:
+            yield f"Only in {right}: {name}"
+        for name in dc.common:
+            yield from compare_trees(os.path.join(left, name), os.path.join(right, name))
+    elif os.path.isfile(left) and os.path.isfile(right):
+        yield from compare_files(left, right)
+    else:
+        yield f"Can't compare {left} and {right}"
 
 
 def set_check_status(sw360, release_id, source, attachment_id, dry_run=False):
@@ -158,6 +212,10 @@ def verify_sources(bom, sw360_url, sw360_token, trusted_verifiers,
             continue
 
         sw360_file = sources[0]['filename']
+        # used as a local path, must not escape verify/
+        if sw360_file in ("", ".", "..") or os.path.basename(sw360_file) != sw360_file:
+            print("ERROR: unsafe attachment filename", repr(sw360_file))
+            continue
         sw360_path = os.path.join("verify", sw360_file)
         try:
             sw360.download_attachment(
@@ -188,10 +246,8 @@ def verify_sources(bom, sw360_url, sw360_token, trusted_verifiers,
             our_unpack_path = found[0]
             found = glob.glob(os.path.join(our_unpack_path, "*"))
 
-        ret = subprocess.call(
-            "diff -qur "+our_unpack_path+" "+sw360_unpack_path,
-            shell=True)
-        if ret == 0:
+        diffs = list(compare_trees(our_unpack_path, sw360_unpack_path))
+        if not diffs:
             print("OK:", sw360_file, "identical to", our_file)
             set_cdx(item, "Sw360SourceFileCheck", "passed")
             shutil.rmtree("verify/local-"+our_file+"-unzip")
@@ -202,6 +258,7 @@ def verify_sources(bom, sw360_url, sw360_token, trusted_verifiers,
                                       or not set_accepted))
         else:
             print("ERROR - source files differ!")
+            print("\n".join(diffs))
             set_cdx(item, "Sw360SourceFileCheck", "failed")
 
     return bom
