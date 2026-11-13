@@ -19,7 +19,7 @@ from capycli.common.capycli_bom_support import (CaPyCliBom, CycloneDxSupport,
                                                 SbomWriter)
 from capycli.common.json_support import write_json_to_file
 from capycli.common.map_result import MapResult
-from capywfa.verify_sources import verify_sources
+from capywfa.verify_sources import MAX_DIFF_LINES, verify_sources
 from capycli.bom.create_components import BomCreateComponents
 from capycli.project.create_project import CreateProject
 from cyclonedx.model import ExternalReferenceType, HashAlgorithm
@@ -337,8 +337,13 @@ def main():
             """Don't set checkStatus to ACCEPTED in SW360 for verified sources.
             Avoids triggering moderation requests; the source is still marked
             as verified locally."""))
+    parser.add_argument(
+        "--max-diff-lines", type=int, default=MAX_DIFF_LINES, metavar="N",
+        help=f"Maximum unified diff lines to show (0 disables diffs; default: {MAX_DIFF_LINES})")
 
     args = parser.parse_args()
+    if args.max_diff_lines < 0:
+        parser.error("--max-diff-lines must be non-negative")
     if not args.token:
         parser.error("no SW360 token: use --token or set SW360ProductionToken")
 
@@ -426,6 +431,7 @@ def main():
         bom = verify_sources(bom, args.url, args.token,
                              trusted_verifiers=args.trusted_verifiers,
                              sbom_dir=None, pkg_dir=None,
+                             max_diff_lines=args.max_diff_lines,
                              set_accepted=not args.no_set_accepted)
         write_bom(bom, filename+"-2-sourceverify-quick"+extension)
 
@@ -503,6 +509,7 @@ def main():
             bom = verify_sources(bom, args.url, args.token,
                                  sbom_dir=sbom_dir, pkg_dir=args.sources,
                                  trusted_verifiers=args.trusted_verifiers,
+                                 max_diff_lines=args.max_diff_lines,
                                  set_accepted=not args.no_set_accepted)
             outputbom = write_bom(bom, filename+"-5-sourceverify"+extension)
 
