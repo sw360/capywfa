@@ -3,7 +3,7 @@
 #
 # SPDX-License-Identifier: MIT
 
-from capywfa.verify_sources import verify_sources, split_verifiers
+from capywfa.verify_sources import verify_sources, split_verifiers, compare_trees, compare_files
 from capywfa.cdx_support import set_cdx, get_cdx, remove_cdx
 from cyclonedx.model.bom import Bom
 from cyclonedx.model.component import Component, ComponentType
@@ -79,6 +79,48 @@ def test_split_verifiers():
     assert split_verifiers(["foo@bar.com alice@example.com", "carol@x.org"]) == [
         "foo@bar.com", "alice@example.com", "carol@x.org"]
     assert split_verifiers([]) == []
+
+
+def test_compare_trees_symlink_loop(tmp_path):
+    a, b = tmp_path / "a", tmp_path / "b"
+    for d in (a, b):
+        d.mkdir()
+        (d / "loop").symlink_to(".")
+    assert list(compare_trees(str(a), str(b))) == []
+    (b / "loop").unlink()
+    (b / "loop").mkdir()
+    assert list(compare_trees(str(a), str(b))) == [f"Symlinks {a / 'loop'} and {b / 'loop'} differ"]
+
+
+def test_compare_trees(tmp_path):
+    a, b = tmp_path / "a", tmp_path / "b"
+    a.mkdir()
+    b.mkdir()
+    (a / "same.c").write_text("int x;\n")
+    (b / "same.c").write_text("int x;\n")
+    assert list(compare_trees(str(a), str(b))) == []
+
+    (a / "changed.c").write_text("int x;\n")
+    (b / "changed.c").write_text("int y;\n")
+    st = os.stat(a / "changed.c")
+    os.utime(b / "changed.c", ns=(st.st_atime_ns, st.st_mtime_ns))
+    (a / "only_a.c").write_text("")
+    (a / ".git").mkdir()
+    (a / "logo.bin").write_bytes(b"\0\1")
+    (b / "logo.bin").write_bytes(b"\0\2")
+    out = "\n".join(compare_trees(str(a), str(b)))
+    assert "-int x;" in out and "+int y;" in out
+    assert f"Only in {a}: only_a.c" in out
+    assert f"Binary files {a / 'logo.bin'} and {b / 'logo.bin'} differ" in out
+    assert f"Only in {a}: .git" in out
+
+
+def test_compare_files_too_big(tmp_path, monkeypatch):
+    monkeypatch.setattr("capywfa.verify_sources.MAX_DIFF_SIZE", 4)
+    (tmp_path / "a.c").write_text("int x;\n")
+    (tmp_path / "b.c").write_text("int y;\n")
+    out = "\n".join(compare_files(str(tmp_path / "a.c"), str(tmp_path / "b.c")))
+    assert out == f"Files {tmp_path / 'a.c'} and {tmp_path / 'b.c'} differ (too big to diff)"
 
 
 @vcr_test("base.yaml")
