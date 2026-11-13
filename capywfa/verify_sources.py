@@ -13,7 +13,9 @@
 # paths. Use in virtual environments only (at your own risk).
 
 import os
-import subprocess
+import difflib
+import filecmp
+import hashlib
 import shutil
 import glob
 import requests
@@ -23,6 +25,9 @@ from sw360 import SW360, SW360Error
 from capywfa.cdx_support import get_cdx, set_cdx, resolve_local_source_url
 from capycli.common.capycli_bom_support import CaPyCliBom, CycloneDxSupport
 from capycli.common.map_result import MapResult
+
+MAX_DIFF_SIZE = 1 << 20  # difflib gets too slow on bigger files
+MAX_DIFF_LINES = 100
 
 
 def unpack(archive, target_dir):
@@ -37,6 +42,74 @@ def unpack(archive, target_dir):
             os.remove(tar)
     else:
         shutil.unpack_archive(archive, target_dir)
+
+
+def sha256_file(path):
+    with open(path, "rb") as f:
+        return hashlib.file_digest(f, "sha256").hexdigest()
+
+
+def is_binary(path):
+    # same heuristic as git: NUL in first 8000 bytes
+    with open(path, "rb") as f:
+        return b"\0" in f.read(8000)
+
+
+def compare_files(left, right):
+    if sha256_file(left) == sha256_file(right):
+        return
+    if is_binary(left) or is_binary(right):
+        yield f"Binary files {left} and {right} differ"
+        return
+    if max(os.path.getsize(left), os.path.getsize(right)) > MAX_DIFF_SIZE:
+        yield f"Files {left} and {right} differ (too big to diff)"
+        return
+    with open(left, "rb") as fl, open(right, "rb") as fr:
+        a, b = fl.read(), fr.read()
+    for line in difflib.diff_bytes(difflib.unified_diff, a.splitlines(True), b.splitlines(True),
+                                   os.fsencode(left), os.fsencode(right)):
+        yield line.decode(errors="replace").rstrip("\n")
+
+
+def compare_trees(left, right):
+    if os.path.islink(left) or os.path.islink(right):
+        # never follow links: a dir link can loop back into the tree
+        if not (os.path.islink(left) and os.path.islink(right)
+                and os.readlink(left) == os.readlink(right)):
+            yield f"Symlinks {left} and {right} differ"
+    elif os.path.isdir(left) and os.path.isdir(right):
+        # don't use dc.diff_files: dircmp only compares size+mtime
+        dc = filecmp.dircmp(left, right, ignore=[])  # default skips .git, tags, etc.
+        for name in dc.left_only:
+            yield f"Only in {left}: {name}"
+        for name in dc.right_only:
+            yield f"Only in {right}: {name}"
+        for name in dc.common:
+            yield from compare_trees(os.path.join(left, name), os.path.join(right, name))
+    elif os.path.isfile(left) and os.path.isfile(right):
+        yield from compare_files(left, right)
+    else:
+        yield f"Can't compare {left} and {right}"
+
+
+def _limit_diff_output(diffs, max_lines=MAX_DIFF_LINES):
+    if max_lines < 0:
+        raise ValueError("max_lines must be non-negative")
+    if max_lines == 0:
+        if next(iter(diffs), None) is None:
+            return []
+        return ["... (diff output disabled; set --max-diff-lines above 0 to show)"]
+
+    lines = []
+    omitted = 0
+    for line in diffs:
+        if len(lines) < max_lines:
+            lines.append(line)
+        else:
+            omitted += 1
+    if omitted:
+        lines.append(f"... ({omitted} more lines omitted)")
+    return lines
 
 
 def set_check_status(sw360, release_id, source, attachment_id, dry_run=False):
@@ -74,7 +147,11 @@ def split_verifiers(args):
 
 
 def verify_sources(bom, sw360_url, sw360_token, trusted_verifiers,
-                   sbom_dir=None, pkg_dir=None, set_accepted=True):
+                   sbom_dir=None, pkg_dir=None, set_accepted=True,
+                   max_diff_lines=MAX_DIFF_LINES):
+    if max_diff_lines < 0:
+        raise ValueError("max_diff_lines must be non-negative")
+
     trusted_verifiers = split_verifiers(trusted_verifiers)
     if len(sw360_token) > 100:
         oauth2 = True
@@ -188,10 +265,9 @@ def verify_sources(bom, sw360_url, sw360_token, trusted_verifiers,
             our_unpack_path = found[0]
             found = glob.glob(os.path.join(our_unpack_path, "*"))
 
-        ret = subprocess.call(
-            "diff -qur "+our_unpack_path+" "+sw360_unpack_path,
-            shell=True)
-        if ret == 0:
+        diffs = _limit_diff_output(
+            compare_trees(our_unpack_path, sw360_unpack_path), max_diff_lines)
+        if not diffs:
             print("OK:", sw360_file, "identical to", our_file)
             set_cdx(item, "Sw360SourceFileCheck", "passed")
             shutil.rmtree("verify/local-"+our_file+"-unzip")
@@ -202,6 +278,7 @@ def verify_sources(bom, sw360_url, sw360_token, trusted_verifiers,
                                       or not set_accepted))
         else:
             print("ERROR - source files differ!")
+            print("\n".join(diffs))
             set_cdx(item, "Sw360SourceFileCheck", "failed")
 
     return bom
@@ -216,9 +293,14 @@ def main():
     parser.add_argument("-s", "--sources", help="package directory containing sources")
     parser.add_argument("-vf", "--trusted-verifiers", help="Trusted attachment verifiers",
                         metavar="EMAIL", nargs="+", required=True)
+    parser.add_argument("--max-diff-lines", type=int, default=MAX_DIFF_LINES, metavar="N",
+                        help="Maximum unified diff lines to show (0 disables diffs; "
+                             f"default: {MAX_DIFF_LINES})")
     parser.add_argument("--no-set-accepted", action="store_true",
                         help="Don't set checkStatus to ACCEPTED in SW360 for verified sources")
     args = parser.parse_args()
+    if args.max_diff_lines < 0:
+        parser.error("--max-diff-lines must be non-negative")
 
     bom = CaPyCliBom.read_sbom(args.input)
 
@@ -229,6 +311,7 @@ def main():
                    trusted_verifiers=args.trusted_verifiers,
                    sbom_dir=os.path.dirname(os.path.abspath(args.input)),
                    pkg_dir=args.sources,
+                   max_diff_lines=args.max_diff_lines,
                    set_accepted=not args.no_set_accepted)
 
 
