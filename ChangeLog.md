@@ -21,6 +21,11 @@ SPDX-License-Identifier: MIT
 * capywfa: source verification no longer runs `diff`. Mismatches now show which
   files differ, with a unified diff for text files up to 1 MiB. Larger and
   binary files are reported by name only.
+* capywfa: fix path traversal in source verification. SW360 attachment filenames
+  with path separators or `..` are rejected before download, and tar archives
+  are extracted with tarfile's `data` filter on all Python versions (3.11-3.13
+  previously used the unfiltered default). Archives with symlinks pointing
+  outside themselves currently abort the whole verification run.
 
 ## 0.12.1
 

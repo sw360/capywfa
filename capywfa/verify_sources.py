@@ -9,8 +9,8 @@
 #
 # Verify uploaded sources in SW360 are identical to local ones.
 #
-# Note this is vulnerable against archives with absolute or relative ../../
-# paths. Use in virtual environments only (at your own risk).
+# Note this is not protected against denial of service (huge archives).
+# Use in virtual environments only (at your own risk).
 
 import os
 import difflib
@@ -32,15 +32,17 @@ MAX_DIFF_SIZE = 1 << 20  # difflib gets too slow on bigger files
 def unpack(archive, target_dir):
     # TODO: inspect content to avoid overwriting files outside target_dir
     if archive.endswith(".gem"):
-        shutil.unpack_archive(archive, target_dir, "tar")
+        shutil.unpack_archive(archive, target_dir, "tar", filter="data")
         data_tar = os.path.join(target_dir, "data.tar.gz")
         all_tars = glob.glob(target_dir+"/*")
         data_target_dir = os.path.join(target_dir, "data")
-        shutil.unpack_archive(data_tar, data_target_dir)
+        shutil.unpack_archive(data_tar, data_target_dir, filter="data")
         for tar in all_tars:
             os.remove(tar)
-    else:
+    elif archive.endswith(".zip"):
         shutil.unpack_archive(archive, target_dir)
+    else:
+        shutil.unpack_archive(archive, target_dir, filter="data")
 
 
 def sha256_file(path):
@@ -210,6 +212,10 @@ def verify_sources(bom, sw360_url, sw360_token, trusted_verifiers,
             continue
 
         sw360_file = sources[0]['filename']
+        # used as a local path, must not escape verify/
+        if sw360_file in ("", ".", "..") or os.path.basename(sw360_file) != sw360_file:
+            print("ERROR: unsafe attachment filename", repr(sw360_file))
+            continue
         sw360_path = os.path.join("verify", sw360_file)
         try:
             sw360.download_attachment(

@@ -3,7 +3,8 @@
 #
 # SPDX-License-Identifier: MIT
 
-from capywfa.verify_sources import verify_sources, split_verifiers, compare_trees, compare_files
+from capywfa.verify_sources import (
+    verify_sources, split_verifiers, compare_trees, compare_files, unpack)
 from capywfa.cdx_support import set_cdx, get_cdx, remove_cdx
 from cyclonedx.model.bom import Bom
 from cyclonedx.model.component import Component, ComponentType
@@ -13,6 +14,7 @@ from packageurl import PackageURL
 import vcr
 import os
 import shutil
+import tarfile
 import pytest
 
 SHA1 = "f8ed764424ee04dac8298bdc1feed2e356f3d2cd"
@@ -113,6 +115,17 @@ def test_compare_trees(tmp_path):
     assert f"Only in {a}: only_a.c" in out
     assert f"Binary files {a / 'logo.bin'} and {b / 'logo.bin'} differ" in out
     assert f"Only in {a}: .git" in out
+
+
+def test_unpack_tar_rejects_escape(tmp_path):
+    archive = tmp_path / "evil.tar"
+    with tarfile.open(archive, "w") as tf:
+        tf.addfile(tarfile.TarInfo("../escape.txt"))
+    dst = tmp_path / "dst"
+    dst.mkdir()
+    with pytest.raises(tarfile.FilterError):
+        unpack(str(archive), str(dst))
+    assert not (tmp_path / "escape.txt").exists()
 
 
 def test_compare_files_too_big(tmp_path, monkeypatch):
@@ -298,3 +311,34 @@ def test_verify_sources_spec_compliant_not_found(capsys, verify):
     captured = capsys.readouterr()
     assert get_cdx(bom.components[0], "Sw360SourceFileCheck") == "failed"
     assert "local source" in captured.out and "missing" in captured.out
+
+
+def test_verify_sources_unsafe_attachment_filename(capsys, verify, monkeypatch):
+    attachment = {"filename": "../../evil.zip", "checkStatus": "NEW", "sha1": "0",
+                  "_links": {"self": {"href": "attachments/1"}}}
+
+    class FakeSW360:
+        def __init__(self, *args, **kwargs):
+            pass
+
+        def login_api(self):
+            pass
+
+        def get_release(self, _):
+            return {"_embedded": {"sw360:attachments": [
+                {"attachmentType": "SOURCE", "_links": {"self": {"href": "attachments/1"}}}]}}
+
+        def get_attachment_by_url(self, _):
+            return attachment
+
+        def get_id_from_href(self, _):
+            return "1"
+
+        def download_attachment(self, *_):
+            raise AssertionError("download attempted")
+
+    monkeypatch.setattr("capywfa.verify_sources.SW360", FakeSW360)
+    bom = create_test_bom()
+    add_test_bom_ext_ref(bom)
+    verify_sources(bom, "https://sw360.example.com", "mytoken", [], pkg_dir=FIXTURES)
+    assert "unsafe attachment filename" in capsys.readouterr().out
