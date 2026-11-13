@@ -19,7 +19,7 @@ from capycli.common.capycli_bom_support import (CaPyCliBom, CycloneDxSupport,
                                                 SbomWriter)
 from capycli.common.json_support import write_json_to_file
 from capycli.common.map_result import MapResult
-from capywfa.verify_sources import MAX_DIFF_LINES, verify_sources
+from capywfa.verify_sources import MAX_DIFF_LINES, verify_sources, load_verified_purls
 from capycli.bom.create_components import BomCreateComponents
 from capycli.project.create_project import CreateProject
 from cyclonedx.model import ExternalReferenceType, HashAlgorithm
@@ -340,6 +340,11 @@ def main():
     parser.add_argument(
         "--max-diff-lines", type=int, default=MAX_DIFF_LINES, metavar="N",
         help=f"Maximum unified diff lines to show (0 disables diffs; default: {MAX_DIFF_LINES})")
+    parser.add_argument(
+        "--verified-sources", metavar="FILE", help=textwrap.dedent(
+            """JSON list of {"purl": ..., "comment": ...} objects for source
+            attachments which were checked manually and are equivalent to the
+            local sources. Matching BOM items are treated as verified."""))
 
     args = parser.parse_args()
     if args.max_diff_lines < 0:
@@ -350,6 +355,8 @@ def main():
     if not os.path.exists(args.input):
         print("ERROR: inputfile not found:", args.input)
         sys.exit(1)
+
+    verified_purls = load_verified_purls(args.verified_sources)
 
     sbom_dir = os.path.dirname(os.path.abspath(args.input))
     if os.path.abspath(args.sources) != sbom_dir:
@@ -432,7 +439,8 @@ def main():
                              trusted_verifiers=args.trusted_verifiers,
                              sbom_dir=None, pkg_dir=None,
                              max_diff_lines=args.max_diff_lines,
-                             set_accepted=not args.no_set_accepted)
+                             set_accepted=not args.no_set_accepted,
+                             verified_purls=verified_purls)
         write_bom(bom, filename+"-2-sourceverify-quick"+extension)
 
     print()
@@ -510,7 +518,8 @@ def main():
                                  sbom_dir=sbom_dir, pkg_dir=args.sources,
                                  trusted_verifiers=args.trusted_verifiers,
                                  max_diff_lines=args.max_diff_lines,
-                                 set_accepted=not args.no_set_accepted)
+                                 set_accepted=not args.no_set_accepted,
+                                 verified_purls=verified_purls)
             outputbom = write_bom(bom, filename+"-5-sourceverify"+extension)
 
     print()
@@ -608,11 +617,12 @@ def main():
         print(len(todo_unchecked), "SW360 sources couldn't be verified.")
         print(textwrap.dedent("""
             Please check the differences in `verify` folder and set attachment
-            to DENIED or ACCEPTED in SW360, then re-run.
+            to DENIED or ACCEPTED in SW360, or add the PURL to the
+            --verified-sources file if they are equivalent, then re-run.
             """))
         print("BOM items with attachment differences:")
         for item in todo_unchecked:
-            print("-", item.name, item.version,
+            print("-", item.purl,
                   args.url + "/group/guest/components/-/component/release/"
                   "detailRelease/"
                   + get_cdx(item, "Sw360Id")+"#/tab-Attachments")

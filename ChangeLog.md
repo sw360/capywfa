@@ -27,6 +27,13 @@ SPDX-License-Identifier: MIT
   are extracted with tarfile's `data` filter on all Python versions (3.11-3.13
   previously used the unfiltered default). Archives with symlinks pointing
   outside themselves currently abort the whole verification run.
+* capywfa: new `--verified-sources FILE` option takes a JSON list of
+  `{"purl": ..., "comment": ...}` objects. Source attachments listed there are
+  marked as verified even if they differ from the local source, e.g. after a
+  manual check found them equivalent. This also applies to releases with several
+  source attachments, but not to releases without any. The summary lists the
+  full PURL of each unverified item, including qualifiers, so it can be copied
+  into this file.
 
 ## 0.12.1
 
