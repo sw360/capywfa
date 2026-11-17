@@ -55,14 +55,14 @@ testing = ["pytest (>=6,!=7.0.0)", "pytest-xdist (>=2)"]
 
 [[package]]
 name = "capycli"
-version = "2.12.0"
+version = "2.13.0"
 description = "CaPyCli - Clearing Automation Python Command Line Interface for SW360"
 optional = false
 python-versions = "<3.15,>=3.11"
 groups = ["main"]
 files = [
-    {file = "capycli-2.12.0-py3-none-any.whl", hash = "sha256:f7d2ed93abc842d755af4d9fed807f8d993038a473a3aa26523f866294b42095"},
-    {file = "capycli-2.12.0.tar.gz", hash = "sha256:66040da519d044dc81785253255e1f91ec0774eb623c3b9d926c27cb1a5dcfee"},
+    {file = "capycli-2.13.0-py3-none-any.whl", hash = "sha256:81738b02aa2fa4186bf0c9ff956a805cfb0c4c600b075643f3f880a5c7e392a9"},
+    {file = "capycli-2.13.0.tar.gz", hash = "sha256:99d258a96b363cb3684b3a2288655a16207c4d702f6572230909553e7be55491"},
 ]
 
 [package.dependencies]
@@ -79,7 +79,7 @@ pyjwt = ">=2.4.0,<3.0.0"
 requests = ">=2.31.0,<3.0.0"
 requirements-parser = "0.11.0"
 semver = "3.0.2"
-sw360 = ">=1.12.0"
+sw360 = ">=1.13.0"
 
 [[package]]
 name = "certifi"
@@ -567,14 +567,14 @@ files = [
 
 [[package]]
 name = "py-serializable"
-version = "2.1.0"
+version = "2.2.0"
 description = "Library for serializing and deserializing Python Objects to and from JSON and XML."
 optional = false
 python-versions = "<4.0,>=3.8"
 groups = ["main"]
 files = [
-    {file = "py_serializable-2.1.0-py3-none-any.whl", hash = "sha256:b56d5d686b5a03ba4f4db5e769dc32336e142fc3bd4d68a8c25579ebb0a67304"},
-    {file = "py_serializable-2.1.0.tar.gz", hash = "sha256:9d5db56154a867a9b897c0163b33a793c804c80cee984116d02d49e4578fc103"},
+    {file = "py_serializable-2.2.0-py3-none-any.whl", hash = "sha256:2cce775abc5aac12115f9ff572a145c7276d04a770090334bd4e51ed9c782415"},
+    {file = "py_serializable-2.2.0.tar.gz", hash = "sha256:8e4fa02e8de819c0488ccdb69c2d3109274adcf224c02357fd8729cb12727aab"},
 ]
 
 [package.dependencies]
@@ -970,14 +970,14 @@ files = [
 
 [[package]]
 name = "soupsieve"
-version = "2.10"
+version = "4.1.1"
 description = "A modern CSS selector implementation for Beautiful Soup."
 optional = false
-python-versions = ">=3.10"
+python-versions = ">=3.11.5"
 groups = ["main"]
 files = [
-    {file = "soupsieve-2.10-py3-none-any.whl", hash = "sha256:8596eb8967d744174820280fa62b4542a2e955bfaccca73ed8a13c6eb8e9b502"},
-    {file = "soupsieve-2.10.tar.gz", hash = "sha256:49e9380d7d2905463583bafe285e818c7366a9ed7b3aee221c1ac79c905d8bc0"},
+    {file = "soupsieve-4.1.1-py3-none-any.whl", hash = "sha256:8ff3422dab0b720fb667ee79864d80531a0e57994a13eb701697719ffcb751f6"},
+    {file = "soupsieve-4.1.1.tar.gz", hash = "sha256:b296bd2d2f65b1a78149f3d7bf6736a147d2c9e2dfbde0e4404639d748a02e03"},
 ]
 
 [[package]]
@@ -994,14 +994,14 @@ files = [
 
 [[package]]
 name = "sw360"
-version = "1.12.0"
+version = "1.13.0"
 description = "Python interface to the SW360 software component catalogue"
 optional = false
 python-versions = "<4.0,>=3.11"
 groups = ["main"]
 files = [
-    {file = "sw360-1.12.0-py3-none-any.whl", hash = "sha256:0e8aacb6923859f20838c63d68ec66fc21b8d264c842ce80f325e28756dfbfb0"},
-    {file = "sw360-1.12.0.tar.gz", hash = "sha256:74dc8a08fb9995cfbef056097afe8a3dd1e29f5ede1e946c45d5a31e1f4a07a1"},
+    {file = "sw360-1.13.0-py3-none-any.whl", hash = "sha256:d0a9c207c0fd18df27c75a37440eb40ad252045294c2fcb50a021caa437ad37a"},
+    {file = "sw360-1.13.0.tar.gz", hash = "sha256:bb0cf7da8b321952a9537a0b227c0b8375eefb2874fa50462b35efe5f03796bb"},
 ]
 
 [package.dependencies]
@@ -1025,14 +1025,14 @@ tests = ["pytest", "pytest-cov"]
 
 [[package]]
 name = "types-setuptools"
-version = "84.0.0.20261006"
+version = "84.2.0.20261104"
 description = "Typing stubs for setuptools"
 optional = false
 python-versions = ">=3.10"
 groups = ["main"]
 files = [
-    {file = "types_setuptools-84.0.0.20261006-py3-none-any.whl", hash = "sha256:f435ec88f8f2319316969e37b5a1ca49496b276889124de249b422b061b492fe"},
-    {file = "types_setuptools-84.0.0.20261006.tar.gz", hash = "sha256:0f123655f44390a15ec62c9fa30b57f6dafe53014524d28b62cab1edbc303059"},
+    {file = "types_setuptools-84.2.0.20261104-py3-none-any.whl", hash = "sha256:23e9bf876adca8df2285a68f76c355128b1e679b27cfec4854faf350cd7999e5"},
+    {file = "types_setuptools-84.2.0.20261104.tar.gz", hash = "sha256:1ec758bbeddf88d52f963fe663beabc2117b6aae73cf3d2902d7dd0df81bd76e"},
 ]
 
 [[package]]
@@ -1201,5 +1201,5 @@ dev = ["pytest", "setuptools"]
 
 [metadata]
 lock-version = "2.1"
-python-versions = ">=3.11.0,<3.15"
-content-hash = "a0b160dc4636ca944124e8ab0d502c5334a02b3175ac274428d620e2c1c54309"
+python-versions = ">=3.11.5,<3.15"
+content-hash = "fab7a4b176d792a5abf9d4f44a904fc95dd036c159d3dbb0131be06ca5b66327"
