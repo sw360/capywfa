@@ -16,11 +16,13 @@ import os
 import difflib
 import filecmp
 import hashlib
+import json
 import shutil
 import glob
 import requests
 import argparse
 from datetime import datetime
+from packageurl import PackageURL
 from sw360 import SW360, SW360Error
 from capywfa.cdx_support import get_cdx, set_cdx, resolve_local_source_url
 from capycli.common.capycli_bom_support import CaPyCliBom, CycloneDxSupport
@@ -148,9 +150,16 @@ def split_verifiers(args):
     return [v for arg in args for v in arg.split()]
 
 
+def load_verified_purls(path):
+    if path is None:
+        return set()
+    with open(path) as f:
+        return {str(PackageURL.from_string(entry["purl"])) for entry in json.load(f)}
+
+
 def verify_sources(bom, sw360_url, sw360_token, trusted_verifiers,
                    sbom_dir=None, pkg_dir=None, set_accepted=True,
-                   max_diff_lines=MAX_DIFF_LINES):
+                   max_diff_lines=MAX_DIFF_LINES, verified_purls=frozenset()):
     if max_diff_lines < 0:
         raise ValueError("max_diff_lines must be non-negative")
 
@@ -194,6 +203,12 @@ def verify_sources(bom, sw360_url, sw360_token, trusted_verifiers,
             info = sw360.get_attachment_by_url(ata["_links"]["self"]["href"])
             if info.get("checkStatus", "") != "REJECTED":
                 sources.append(info)
+
+        # matched by purl only, so a re-uploaded attachment stays verified
+        if sources and str(item.purl) in verified_purls:
+            set_cdx(item, "Sw360SourceFileCheck", "passed")
+            print("OK: manually verified (see --verified-sources)")
+            continue
 
         if len(sources) != 1:
             print("ERROR:", len(sources), "sources found")

@@ -4,7 +4,8 @@
 # SPDX-License-Identifier: MIT
 
 from capywfa.verify_sources import (verify_sources, split_verifiers, compare_trees,
-                                    compare_files, unpack, _limit_diff_output)
+                                    compare_files, unpack, _limit_diff_output,
+                                    load_verified_purls)
 from capywfa.cdx_support import set_cdx, get_cdx, remove_cdx
 from cyclonedx.model.bom import Bom
 from cyclonedx.model.component import Component, ComponentType
@@ -12,6 +13,7 @@ from cyclonedx.model import ExternalReference, ExternalReferenceType, HashType, 
 from capycli.common.capycli_bom_support import CaPyCliBom
 from packageurl import PackageURL
 import vcr
+import json
 import os
 import shutil
 import tarfile
@@ -163,6 +165,54 @@ def test_verify_sources_no_sw360id(capsys):
     bom = verify_sources(bom, "https://sw360.example.com", "mytoken", [], pkg_dir="pkgs")
     captured = capsys.readouterr()
     assert "no sw360id in BOM" in captured.out
+
+
+@vcr_test("base.yaml")
+def test_verify_sources_verified_purl(capsys, tmp_path):
+    """Purl from verified file (unencoded '+') matches BOM item without any local source."""
+    verified = tmp_path / "verified.json"
+    verified.write_text(json.dumps(
+        [{"purl": "pkg:deb/debian/efibootguard@0.13+cip.debian?arch=source",
+          "comment": "checked by hand"}]))
+    bom = create_test_bom()
+    with vcr_test("base.yaml") as cassette:
+        bom = verify_sources(bom, "https://sw360.example.com", "mytoken", [],
+                             verified_purls=load_verified_purls(str(verified)))
+        assert cassette.play_count == 3
+    assert get_cdx(bom.components[0], "Sw360SourceFileCheck") == "passed"
+    assert "manually verified" in capsys.readouterr().out
+
+
+@pytest.mark.parametrize("n_sources, expected", [(2, "passed"), (0, "multiple-sources")])
+def test_verify_sources_verified_purl_attachment_count(tmp_path, monkeypatch, n_sources, expected):
+    """Verified purl wins over multiple source attachments, but needs at least one."""
+    class FakeSW360:
+        def __init__(self, *args, **kwargs):
+            pass
+
+        def login_api(self):
+            pass
+
+        def get_release(self, _):
+            return {"_embedded": {"sw360:attachments": [
+                {"attachmentType": "SOURCE", "_links": {"self": {"href": f"attachments/{i}"}}}
+                for i in range(n_sources)]}}
+
+        def get_attachment_by_url(self, href):
+            return {"filename": "x.zip", "checkStatus": "NEW", "sha1": "0",
+                    "_links": {"self": {"href": href}}}
+
+        def get_id_from_href(self, href):
+            return href.rsplit("/", 1)[-1]
+
+    monkeypatch.setattr("capywfa.verify_sources.SW360", FakeSW360)
+    verified = tmp_path / "verified.json"
+    verified.write_text(json.dumps(
+        [{"purl": "pkg:deb/debian/efibootguard@0.13+cip.debian?arch=source", "comment": "x"}]))
+    bom = create_test_bom()
+    verify_sources(bom, "https://sw360.example.com", "mytoken", [],
+                   verified_purls=load_verified_purls(str(verified)))
+    assert get_cdx(bom.components[0], "Sw360SourceFileCheck") == expected
 
 
 @vcr_test("base.yaml")
